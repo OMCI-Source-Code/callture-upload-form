@@ -4,16 +4,6 @@ from utility import parse_req_to_ids, test_parse_req_to_ids
 
 app = Flask(__name__)
 
-download_path = "."
-
-@app.route('/')
-def home():
-    return 'Hello, World!'
-
-@app.route('/about')
-def about():
-    return 'About'
-
 @app.route('/callture_login')
 def login_page():
     req = post_login()
