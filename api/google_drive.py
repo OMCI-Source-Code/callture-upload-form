@@ -62,14 +62,18 @@ def drive_folder_exists(name, root_id=os.environ.get("ROOT_FOLDER")):
     # )
     # print(f"file is {results["files"]}")
     
-    query = f"'{root_id}' in parents"
+    query = f"parents = '{root_id}'"
 
     response = service.files().list(
       q=query, 
-      spaces='drive',
-      fields="files(id, name)",
-      supportsAllDrives=True
     ).execute()
+    
+    nextPageToken=response.get("nextPageToken")
+
+    while nextPageToken:
+      response = service.files().list(q=query).execute()
+      files.extend(response.get('files'))
+      nextPageToken=response.get("nextPageToken")
 
     print(response)
   except HttpError as error:

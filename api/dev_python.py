@@ -25,10 +25,10 @@ def upload_basic():
     service = build('drive', 'v3', credentials=credentials)
 
     file_metadata = {
-        "name": "download.text",
+        "name": "TEST1.text",
         "parents": [FOLDER_ID]
     }
-    media = MediaFileUpload("api/download.text", mimetype="audio/mpeg")
+    media = MediaFileUpload("api/TEST.txt", mimetype="audio/mpeg")
     # pylint: disable=maybe-no-member
     file = (
         service.files()
