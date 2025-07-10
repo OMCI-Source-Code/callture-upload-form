@@ -60,20 +60,12 @@ def drive_folder_exists(name, root_id=os.environ.get("ROOT_FOLDER")):
     #     supportsAllDrives=True
     #   ).execute()
     # )
-    # print(f"file is {results["files"]}")
     
-    query = f"parents = '{root_id}'"
+    query = f"'{root_id}' in parents"
 
     response = service.files().list(
       q=query, 
     ).execute()
-    
-    nextPageToken=response.get("nextPageToken")
-
-    while nextPageToken:
-      response = service.files().list(q=query).execute()
-      files.extend(response.get('files'))
-      nextPageToken=response.get("nextPageToken")
 
     print(response)
   except HttpError as error:
@@ -82,6 +74,48 @@ def drive_folder_exists(name, root_id=os.environ.get("ROOT_FOLDER")):
 
   return response["files"]
 
+def create_folder_path(path: str, root_id: str=os.environ.get("ROOT_FOLDER")):
+  """Create a folder path in G-Drive, given the root id, and path
+
+  Args:
+      path (str): the path to create
+      root_id (str): ID of the root folder
+
+  Returns:
+      {id: str, name: str}: the very last folder created
+  """
+  path = path.split("/")
+  
+  current_parent_id = root_id
+  folder = None
+  for current_folder in path:
+    folder = create_folder(current_folder, current_parent_id)
+    print("")
+    current_parent_id = folder.get("id")
+  print(f"Last folder is {folder}")
+  return folder
+    
+    
+
+def create_folder(name, parent_id):
+  service = get_service()
+  folder_metadata = {
+    'name': name,
+    'mimeType': 'application/vnd.google-apps.folder',
+    'parents': [parent_id]
+  }
+  
+  try:
+    file = (
+          service.files()
+          .create(body=folder_metadata, fields="id, name", supportsAllDrives=True)
+          .execute()
+      )
+  except HttpError as error:
+    print(f"An error occurred: {error}")
+    file = None
+  return file
+
 if __name__ == "__main__":
-  drive_folder_exists("test")
+  create_folder_path("TEST2/test")
     
