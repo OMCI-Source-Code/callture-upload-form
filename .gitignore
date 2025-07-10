@@ -13,3 +13,7 @@ env.bak/
 venv.bak/ 
 
 .env.local
+
+# Dev files
+callture-service-key.json
+CallRecords.xls
