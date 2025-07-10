@@ -17,8 +17,9 @@ body {
 .form-container {
   max-width: 800px;
   margin: 0 auto;
-  background: #D9AE4C;
-  border-radius: 12px;
+  background: #0A0A0A;
+  border-radius: 1.25rem;
+  border: 2px solid #D9AE4C;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
   overflow: hidden;
 }
@@ -26,31 +27,32 @@ body {
 /* Header */
 .form-container h1 {
   background: #0A0A0A;
-  color: white;
-  padding: 30px;
+  color: #D9AE4C;
+  padding: 30px 30px 2px 30px;
   text-align: center;
   font-size: 1.7rem;
   font-weight: 600;
   margin-bottom: 0;
 }
 
+.divider {
+  width: 75%;
+  margin: 10px auto;
+  color: #D9AE4C;
+}
+
 /* Form sections */
 .form-section {
   padding: 25px 30px;
-  border-bottom: 1px solid #d9ae4c;
-}
 
-.form-section:last-child {
-  border-bottom: none;
 }
 
 .form-section h2 {
-  color: #0A0A0A;
+  color: #D9AE4C;
   margin-bottom: 20px;
   font-size: 1.4em;
   font-weight: 500;
   padding-bottom: 10px;
-  border-bottom: 2px solid #0A0A0A;
 }
 
 /* Date inputs */
@@ -63,12 +65,12 @@ body {
 .input-group {
   display: flex;
   flex-direction: column;
-  gap: 8px; 	;
+  gap: 8px;
 }
 
 .input-group label {
   font-weight: 500;
-  color: #555555;
+  color: #f8f9fa;
   font-size: 1.005em;
 }
 
@@ -85,7 +87,7 @@ body {
 .input-group input[type="date"]:focus,
 .input-group input[type="text"]:focus {
   outline: none;
-  border-color: #667eea;
+  border-color: #D9AE4C;
   box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
@@ -105,7 +107,7 @@ body {
   flex: 1;
   margin-bottom: 0;
 }
-
+/*
 .browse-btn {
   background: #ffffff;
   color: #555555;
@@ -127,6 +129,8 @@ body {
   border-color: #555555;
 }
 
+*/
+
 /* Checkbox group */
 .checkbox-group {
   display: grid;
@@ -140,7 +144,7 @@ body {
   align-items: center;
   gap: 12px;
   padding: 12px;
-  border: 2px solid #555555;
+  border: 2px solid #D9AE4C;
   border-radius: 8px;
   transition: all 0.3s ease;
   background: #f8f9fa;
@@ -166,7 +170,6 @@ body {
   color: #0A0A0A;
   flex: 1;
 }
-
 
 .checkbox-item input[type="checkbox"]:checked + label {
   color: #555555;
