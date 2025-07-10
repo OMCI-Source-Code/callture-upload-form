@@ -2,9 +2,6 @@ from io import BytesIO
 import pandas as pd
 from httpx import Response
 
-from google_drive import get_drive_folder, create_folder, upload_to_drive
-from callture import download_recording
-
 def parse_req_to_df(req: Response):
     file = BytesIO(req.content)
     df = pd.read_excel(file, skiprows=8)

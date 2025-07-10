@@ -1,5 +1,5 @@
 from flask import Flask
-from callture import post_login, post_get_calls, post_download_calls, download_recording
+from callture import post_login, post_get_calls, post_download_calls
 from api.pandas_utility import parse_req_to_df, process_df
 from google_drive import upload_df_to_drive
 
