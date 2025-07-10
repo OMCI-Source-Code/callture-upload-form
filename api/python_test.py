@@ -14,7 +14,7 @@ def upload_basic():
   for guides on implementing OAuth2 for the application.
   """
   
-  SERVICE_ACCOUNT_FILE = "callture-service-key.json"
+  SERVICE_ACCOUNT_FILE = "api/callture-service-key.json"
 #   SCOPES = ['/home/luanterr/cmc/callture-backend/api/callture-service-key.json']
   SCOPES = ['https://www.googleapis.com/auth/drive.file']
   FOLDER_ID = "14aQz6OvPyb9UY4KfBbJP9vrl9eqZ3dJx"
@@ -28,7 +28,7 @@ def upload_basic():
         "name": "download.text",
         "parents": [FOLDER_ID]
     }
-    media = MediaFileUpload("download.text", mimetype="audio/mpeg")
+    media = MediaFileUpload("api/download.text", mimetype="audio/mpeg")
     # pylint: disable=maybe-no-member
     file = (
         service.files()
