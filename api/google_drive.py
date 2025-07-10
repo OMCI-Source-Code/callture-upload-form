@@ -13,7 +13,7 @@ load_dotenv(dotenv_path=".env.local")
 def get_service():
   
   SERVICE_ACCOUNT_FILE = "api/callture-service-key.json"
-  SCOPES = ['https://www.googleapis.com/auth/drive.file']
+  SCOPES = ['https://www.googleapis.com/auth/drive.file', 'https://www.googleapis.com/auth/drive.readonly']
   
   credentials = service_account.Credentials.from_service_account_file(
       SERVICE_ACCOUNT_FILE, scopes=SCOPES
@@ -47,42 +47,52 @@ def upload_to_drive(object_bytes, name, mimetype, root_id=os.environ.get("ROOT_F
 
   return file.get("id")
 
-def drive_folder_exists(name, root_id=os.environ.get("ROOT_FOLDER")):
+def get_drive_folder(name=None, root_id=os.environ.get("ROOT_FOLDER")):
+  """
+  Searches for all Google Drive folders matching the given name.
+
+  Args:
+      name (str): The name of the folder to search for.
+      root_id (str, optional): The ID of the parent folder to search within. 
+          Defaults to the value of the "ROOT_FOLDER" environment variable.
+
+  Returns:
+      List[Dict[str, str]]: A list of folders matching the name, where each folder is represented
+      as a dictionary with 'id' and 'name' keys.
+  """
   try:
     service = get_service()
     
-    # results = (
-    #   service.files().list(
-    #     q=f"name='{name}' and mimeType='application/vnd.google-apps.folder'", 
-    #     driveId=root_id,
-    #     corpora='drive',
-    #     includeItemsFromAllDrives=True,
-    #     supportsAllDrives=True
-    #   ).execute()
-    # )
+    results = (
+      service.files().list(
+        q=f"name='{name}' and " if name else ""
+          f"mimeType='application/vnd.google-apps.folder' and "
+          f"trashed = false and "
+          f"'{root_id}' in parents",
+        driveId=os.environ.get("DRIVE_ID"),
+        corpora='drive',
+        fields="files(id, name)",
+        includeItemsFromAllDrives=True,
+        supportsAllDrives=True
+      ).execute()
+    )
     
-    query = f"'{root_id}' in parents"
-
-    response = service.files().list(
-      q=query, 
-    ).execute()
-
-    print(response)
   except HttpError as error:
     print(f"An error occurred: {error}")
     file = None
 
-  return response["files"]
+  return results["files"]
 
 def create_folder_path(path: str, root_id: str=os.environ.get("ROOT_FOLDER")):
-  """Create a folder path in G-Drive, given the root id, and path
+  """
+  Creates a folder path in Google Drive under the specified root folder.
 
   Args:
-      path (str): the path to create
-      root_id (str): ID of the root folder
+      path (str): The folder path to create (e.g., "Parent/Child/Subfolder").
+      root_id (str): The ID of the root folder under which the path will be created.
 
   Returns:
-      {id: str, name: str}: the very last folder created
+      Dict[str, str]: A dictionary containing the 'id' and 'name' of the final folder in the path.
   """
   path = path.split("/")
   
@@ -90,12 +100,8 @@ def create_folder_path(path: str, root_id: str=os.environ.get("ROOT_FOLDER")):
   folder = None
   for current_folder in path:
     folder = create_folder(current_folder, current_parent_id)
-    print("")
     current_parent_id = folder.get("id")
-  print(f"Last folder is {folder}")
   return folder
-    
-    
 
 def create_folder(name, parent_id):
   service = get_service()
@@ -117,5 +123,6 @@ def create_folder(name, parent_id):
   return file
 
 if __name__ == "__main__":
-  create_folder_path("TEST2/test")
+  folders = get_drive_folder()
+  print(folders)
     

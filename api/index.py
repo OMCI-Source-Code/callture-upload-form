@@ -1,6 +1,7 @@
 from flask import Flask
 from callture import post_login, post_get_calls, post_download_calls
-from utility import parse_req_to_ids, test_parse_req_to_ids
+from api.pandas_utility import parse_req_to_df, process_df
+import pandas as pd
 
 app = Flask(__name__)
 
@@ -12,10 +13,13 @@ def login_page():
         return "Failed"
     req = post_get_calls(cookies)
     req = post_download_calls(cookies)
-    id_list = parse_req_to_ids(req)
-    id_list = test_parse_req_to_ids("api/CallRecords.xls")
+    
+    df = parse_req_to_df(req)
+    df = process_df(df)
+    
+    for recording in df.head(5).itertuples():
+        
+        print(f"recording: {recording}")
+    
     
     return "Succeeded"
-    
-    
-    
