@@ -1,30 +1,23 @@
-from io import BytesIO
-import pandas as pd
-
-def parse_req_to_ids(req):
-    file = BytesIO(req.content)
-    df = pd.read_excel(file, skiprows=8)
-    print(df.head(10))
-    
-    return df
-  
-def test_parse_req_to_ids(req):
-    df = pd.read_excel(req, skiprows=8)
-    return df
-
-from io import BytesIO
+import google.auth
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
-from googleapiclient.http import MediaIoBaseUpload
+from googleapiclient.http import MediaFileUpload
 from google.oauth2 import service_account
 
 
-def upload_to_drive(object_bytes, name, parent, mimetype):
-  
-  object_stream = BytesIO(object_bytes)
+def upload_basic():
+  """Insert new file.
+  Returns : Id's of the file uploaded
+
+  Load pre-authorized user credentials from the environment.
+  TODO(developer) - See https://developers.google.com/identity
+  for guides on implementing OAuth2 for the application.
+  """
   
   SERVICE_ACCOUNT_FILE = "callture-service-key.json"
+#   SCOPES = ['/home/luanterr/cmc/callture-backend/api/callture-service-key.json']
   SCOPES = ['https://www.googleapis.com/auth/drive.file']
+  FOLDER_ID = "14aQz6OvPyb9UY4KfBbJP9vrl9eqZ3dJx"
   try:
     credentials = service_account.Credentials.from_service_account_file(
         SERVICE_ACCOUNT_FILE, scopes=SCOPES
@@ -32,14 +25,14 @@ def upload_to_drive(object_bytes, name, parent, mimetype):
     service = build('drive', 'v3', credentials=credentials)
 
     file_metadata = {
-        "name": name,
-        "parents": parent
+        "name": "download.text",
+        "parents": [FOLDER_ID]
     }
-    media_stream = MediaIoBaseUpload(object_stream, mimetype=mimetype, resumable=True)
+    media = MediaFileUpload("download.text", mimetype="audio/mpeg")
     # pylint: disable=maybe-no-member
     file = (
         service.files()
-        .create(body=file_metadata, media_body=media_stream, fields="id")
+        .create(body=file_metadata, media_body=media, fields="id")
         .execute()
     )
     print(f'File ID: {file.get("id")}')
@@ -53,4 +46,3 @@ def upload_to_drive(object_bytes, name, parent, mimetype):
 
 if __name__ == "__main__":
   upload_basic()
-    
