@@ -3,7 +3,6 @@ from dotenv import load_dotenv
 import os
 import httpx
 from datetime import datetime
-from utility import upload_to_drive
 
 load_dotenv(dotenv_path=".env.local")
 
@@ -37,4 +36,10 @@ def post_download_calls(cookies):
     }
         
     req = httpx.post(call_log_url, data=form_data, cookies=cookies, timeout=10.0)
+    return req
+
+download_file_url = f"https://users.fibrehub.org/FileHandler/downloadfile?TypeID=4&ClientID=${os.environ.get('CALLTURE_CLIENT_ID')}&LineNo=${os.environ.get('CALLTURE_LINE_NO')}&FileID="
+def download_recording(recording_id):
+    curr_file_url = download_file_url + str(recording_id)
+    req = httpx.get(curr_file_url, timeout=10.0)
     return req

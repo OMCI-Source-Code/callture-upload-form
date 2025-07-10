@@ -1,7 +1,7 @@
 from flask import Flask
-from callture import post_login, post_get_calls, post_download_calls
+from callture import post_login, post_get_calls, post_download_calls, download_recording
 from api.pandas_utility import parse_req_to_df, process_df
-import pandas as pd
+from google_drive import upload_df_to_drive
 
 app = Flask(__name__)
 
@@ -17,9 +17,6 @@ def login_page():
     df = parse_req_to_df(req)
     df = process_df(df)
     
-    for recording in df.head(5).itertuples():
-        
-        print(f"recording: {recording}")
-    
+    upload_df_to_drive(df)
     
     return "Succeeded"

@@ -6,6 +6,8 @@ from googleapiclient.http import MediaIoBaseUpload
 from google.oauth2 import service_account
 import os
 from dotenv import load_dotenv
+from callture import download_recording
+import pandas as pd
 
 load_dotenv(dotenv_path=".env.local")
 
@@ -21,7 +23,7 @@ def get_service():
   service = build('drive', 'v3', credentials=credentials)
   return service
 
-def upload_to_drive(object_bytes, name, mimetype, root_id=os.environ.get("ROOT_FOLDER")):
+def upload_to_drive(object_bytes, name, mimetype, description, root_id=os.environ.get("ROOT_FOLDER")):
   
   object_stream = BytesIO(object_bytes)
   
@@ -30,14 +32,19 @@ def upload_to_drive(object_bytes, name, mimetype, root_id=os.environ.get("ROOT_F
 
     file_metadata = {
         "name": name,
-        "parents": root_id
+        "parents": [root_id],
+        "description": description
     }
     media_stream = MediaIoBaseUpload(object_stream, mimetype=mimetype, resumable=True)
     # pylint: disable=maybe-no-member
     file = (
         service.files()
-        .create(body=file_metadata, media_body=media_stream, fields="id")
-        .execute()
+        .create(
+          body=file_metadata, 
+          media_body=media_stream, 
+          fields="id",
+          supportsAllDrives=True
+        ).execute()
     )
     print(f'File ID: {file.get("id")}')
 
@@ -63,12 +70,17 @@ def get_drive_folder(name=None, root_id=os.environ.get("ROOT_FOLDER")):
   try:
     service = get_service()
     
+    query = f"name='{name}' and " if name else ""
+    query += (
+      f"mimeType='application/vnd.google-apps.folder' and "
+      f"trashed = false and "
+      f"'{root_id}' in parents"
+    )
+    
+    
     results = (
       service.files().list(
-        q=f"name='{name}' and " if name else ""
-          f"mimeType='application/vnd.google-apps.folder' and "
-          f"trashed = false and "
-          f"'{root_id}' in parents",
+        q=query,
         driveId=os.environ.get("DRIVE_ID"),
         corpora='drive',
         fields="files(id, name)",
@@ -103,7 +115,7 @@ def create_folder_path(path: str, root_id: str=os.environ.get("ROOT_FOLDER")):
     current_parent_id = folder.get("id")
   return folder
 
-def create_folder(name, parent_id):
+def create_folder(name, parent_id=os.environ.get("ROOT_FOLDER")):
   service = get_service()
   folder_metadata = {
     'name': name,
@@ -121,6 +133,47 @@ def create_folder(name, parent_id):
     print(f"An error occurred: {error}")
     file = None
   return file
+
+def upload_df_to_google_drive(df: pd.Dataframe):
+  
+    current_folder = {}
+    
+    for recording in df.head(5).itertuples():
+        print(recording)
+        current_year = recording.Year
+        current_month = recording.Month
+        current_day = recording.Day
+        if "Year" not in current_folder or current_folder["Year"][0] != current_year:
+            folder = get_drive_folder(current_year)
+            if not folder:
+                folder = [create_folder(current_year)]
+            folder = folder[0]
+            current_folder["Year"] = (current_year, folder["id"])
+            
+        if "Month" not in current_folder or current_folder["Month"][0] != current_month:
+            folder = get_drive_folder(current_month, current_folder["Year"][1])
+            if not folder:
+                folder = [create_folder(current_month, current_folder["Year"][1])]
+            folder = folder[0]
+            current_folder["Month"] = (current_month, folder["id"])
+
+        if "Day" not in current_folder or current_folder["Day"][0] != current_day:
+            folder = get_drive_folder(current_day, current_folder["Month"][1])
+            if not folder:
+                folder = [create_folder(current_day, current_folder["Month"][1])]
+            folder = folder[0]
+            current_folder["Day"] = (current_day, folder["id"])
+            
+        
+        day_folder_id = current_folder["Day"][1]
+        
+        recording_id = recording.CDRID
+        name = "_".join(recording.Time.split()[::-1]) + "_" + str(recording.Line_No) + "_" + str(recording.Ext_No) + "_" + str(recording_id)
+        description = "\n".join([f"{field}: {getattr(recording, field)}" for field in recording._fields[1:] if field not in ["Year", "Month", "Day"]])
+
+
+        req = download_recording(recording_id)
+        upload_to_drive(req.content, name, "audio/mpeg", description, day_folder_id)
 
 if __name__ == "__main__":
   folders = get_drive_folder()
