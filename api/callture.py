@@ -4,7 +4,7 @@ import os
 import httpx
 from datetime import datetime
 
-load_dotenv(dotenv_path=".env.local")
+load_dotenv()
 
 login_url = "https://users.fibrehub.org/clnt"
 def post_login():

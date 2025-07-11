@@ -1,28 +1,67 @@
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fvercel%2Fexamples%2Ftree%2Fmain%2Fpython%2Fflask3&demo-title=Flask%203%20%2B%20Vercel&demo-description=Use%20Flask%203%20on%20Vercel%20with%20Serverless%20Functions%20using%20the%20Python%20Runtime.&demo-url=https%3A%2F%2Fflask3-python-template.vercel.app%2F&demo-image=https://assets.vercel.com/image/upload/v1669994156/random/flask.png)
+# Callture 2 Drive
 
-# Flask + Vercel
-
-This example shows how to use Flask 3 on Vercel with Serverless Functions using the [Python Runtime](https://vercel.com/docs/concepts/functions/serverless-functions/runtimes/python).
-
-## Demo
-
-https://flask-python-template.vercel.app/
-
-## How it Works
-
-This example uses the Web Server Gateway Interface (WSGI) with Flask to enable handling requests on Vercel with Serverless Functions.
+This project provides a form and backend that, given a beginning and end date uploads all Callture recordings to a specified folder in a Shared drive.
 
 ## Running Locally
 
+### 1. Set Up Virtual Environment
+
+Create a virtual environment using Python’s built-in `venv`:
+
 ```bash
-npm i -g vercel
-vercel dev
+python -m venv .venv
 ```
 
-Your Flask application is now available at `http://localhost:3000`.
+Activate the virtual environment:
 
-## One-Click Deploy
+- On Windows: \
+  `.venv\Scripts\activate`
+- On MacOS/Linux: \
+  `source .venv/bin/activate`
 
-Deploy the example using [Vercel](https://vercel.com?utm_source=github&utm_medium=readme&utm_campaign=vercel-examples):
+This ensures that any Python packages you install are isolated to this specific environment
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fvercel%2Fexamples%2Ftree%2Fmain%2Fpython%2Fflask3&demo-title=Flask%203%20%2B%20Vercel&demo-description=Use%20Flask%203%20on%20Vercel%20with%20Serverless%20Functions%20using%20the%20Python%20Runtime.&demo-url=https%3A%2F%2Fflask3-python-template.vercel.app%2F&demo-image=https://assets.vercel.com/image/upload/v1669994156/random/flask.png)
+### 2. Install Dependencies
+
+Install the required dependencies from `requirements.txt`:
+
+```bash
+pip install -r requirements.txt
+```
+
+### 3. **Add a service account key**
+
+To run the backend, a Google Cloud service account key is required.
+
+1. Obtain or create a service account key file.
+   - To create your own key, follow the instructions [here to create a project](https://cloud.google.com/iam/docs/service-accounts-create), and then [here to get the service account key](https://stackoverflow.com/questions/46287267/how-can-i-get-the-file-service-account-json-for-google-translate-api)
+2. Place it in the project root as `service_account.json`
+3. This file is **ignored by git** and must never be committed.
+
+### 4. Create a .env file
+
+Certain environment variables are needed for this to run.
+You can add them to the environment, or copy the example .env file by running the command
+
+```bash
+cp .env.example .env
+```
+
+Then fill out the .env file. The following variables are required
+
+| **Variable**   | **Description**                                                    |
+| -------------- | ------------------------------------------------------------------ |
+| USERNAME       | Your callture username you use to log in                           |
+| PASSWORD       | Your callture password you use to log in                           |
+| ROOT_FOLDER_ID | The ID for the root folder your are uploading to in Google Drive   |
+| DRIVE_ID       | The ID for the shared folder your are uploading to in Google Drive |
+
+### 5. Run the Backend
+
+To start the Flask backend locally, run:
+
+```bash
+python -m flask --app api/index run
+```
+
+The application is now available at `http://localhost:5000`

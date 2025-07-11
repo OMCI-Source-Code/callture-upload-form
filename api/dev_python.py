@@ -5,7 +5,7 @@ from google.oauth2 import service_account
 import os
 from dotenv import load_dotenv
 
-load_dotenv(dotenv_path=".env.local")
+load_dotenv()
 
 
 def upload_basic():
@@ -17,10 +17,9 @@ def upload_basic():
   for guides on implementing OAuth2 for the application.
   """
   
-  SERVICE_ACCOUNT_FILE = "api/callture-service-key.json"
-#   SCOPES = ['/home/luanterr/cmc/callture-backend/api/callture-service-key.json']
+  SERVICE_ACCOUNT_FILE = "service_account.json"
   SCOPES = ['https://www.googleapis.com/auth/drive.file']
-  FOLDER_ID = os.environ.get("ROOT_FOLDER")
+  FOLDER_ID = os.environ.get("ROOT_FOLDER_ID")
   try:
     credentials = service_account.Credentials.from_service_account_file(
         SERVICE_ACCOUNT_FILE, scopes=SCOPES

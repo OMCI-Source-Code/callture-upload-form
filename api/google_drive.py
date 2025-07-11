@@ -9,12 +9,12 @@ from dotenv import load_dotenv
 from api.callture import download_recording
 import pandas as pd
 
-load_dotenv(dotenv_path=".env.local")
+load_dotenv()
 
 
 def get_service():
   
-  SERVICE_ACCOUNT_FILE = "api/callture-service-key.json"
+  SERVICE_ACCOUNT_FILE = "service_account.json"
   SCOPES = ['https://www.googleapis.com/auth/drive.file', 'https://www.googleapis.com/auth/drive.readonly']
   
   credentials = service_account.Credentials.from_service_account_file(
@@ -23,7 +23,7 @@ def get_service():
   service = build('drive', 'v3', credentials=credentials)
   return service
 
-def upload_to_drive(object_bytes, name, mimetype, description, root_id=os.environ.get("ROOT_FOLDER")):
+def upload_to_drive(object_bytes, name, mimetype, description, root_id=os.environ.get("ROOT_FOLDER_ID")):
   
   object_stream = BytesIO(object_bytes)
   
@@ -53,14 +53,14 @@ def upload_to_drive(object_bytes, name, mimetype, description, root_id=os.enviro
 
   return file.get("id")
 
-def get_drive_folder(name=None, root_id=os.environ.get("ROOT_FOLDER")):
+def get_drive_folder(name=None, root_id=os.environ.get("ROOT_FOLDER_ID")):
   """
   Searches for all Google Drive folders matching the given name.
 
   Args:
       name (str): The name of the folder to search for.
       root_id (str, optional): The ID of the parent folder to search within. 
-          Defaults to the value of the "ROOT_FOLDER" environment variable.
+          Defaults to the value of the "ROOT_FOLDER_ID" environment variable.
 
   Returns:
       List[Dict[str, str]]: A list of folders matching the name, where each folder is represented
@@ -94,7 +94,7 @@ def get_drive_folder(name=None, root_id=os.environ.get("ROOT_FOLDER")):
 
   return results["files"]
 
-def create_folder_path(path: str, root_id: str=os.environ.get("ROOT_FOLDER")):
+def create_folder_path(path: str, root_id: str=os.environ.get("ROOT_FOLDER_ID")):
   """
   Creates a folder path in Google Drive under the specified root folder.
 
@@ -114,7 +114,7 @@ def create_folder_path(path: str, root_id: str=os.environ.get("ROOT_FOLDER")):
     current_parent_id = folder.get("id")
   return folder
 
-def create_folder(name, parent_id=os.environ.get("ROOT_FOLDER")):
+def create_folder(name, parent_id=os.environ.get("ROOT_FOLDER_ID")):
   service = get_service()
   folder_metadata = {
     'name': name,
