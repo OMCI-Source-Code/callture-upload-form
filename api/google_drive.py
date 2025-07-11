@@ -46,7 +46,6 @@ def upload_to_drive(object_bytes, name, mimetype, description, root_id=os.enviro
           supportsAllDrives=True
         ).execute()
     )
-    print(f'File ID: {file.get("id")}')
 
   except HttpError as error:
     print(f"An error occurred: {error}")
@@ -134,12 +133,12 @@ def create_folder(name, parent_id=os.environ.get("ROOT_FOLDER")):
     file = None
   return file
 
-def upload_df_to_google_drive(df: pd.Dataframe):
+def upload_df_to_drive(df: pd.DataFrame):
+    pd.set_option('display.max_columns', None)
   
     current_folder = {}
     
     for recording in df.head(5).itertuples():
-        print(recording)
         current_year = recording.Year
         current_month = recording.Month
         current_day = recording.Day
@@ -168,6 +167,7 @@ def upload_df_to_google_drive(df: pd.Dataframe):
         day_folder_id = current_folder["Day"][1]
         
         recording_id = recording.CDRID
+        
         name = "_".join(recording.Time.split()[::-1]) + "_" + str(recording.Line_No) + "_" + str(recording.Ext_No) + "_" + str(recording_id)
         description = "\n".join([f"{field}: {getattr(recording, field)}" for field in recording._fields[1:] if field not in ["Year", "Month", "Day"]])
 
@@ -177,5 +177,4 @@ def upload_df_to_google_drive(df: pd.Dataframe):
 
 if __name__ == "__main__":
   folders = get_drive_folder()
-  print(folders)
     

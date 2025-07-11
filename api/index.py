@@ -1,9 +1,11 @@
-from flask import Flask, request
+from flask import Flask, request, jsonify
+from flask_cors import CORS
 from callture import post_login, post_get_calls, post_download_calls
 from api.pandas_utility import parse_req_to_df, process_df
 from google_drive import upload_df_to_drive
 
 app = Flask(__name__)
+CORS(app)
 
 @app.route('/login', methods=["POST"])
 def login():
@@ -11,20 +13,27 @@ def login():
 
 @app.route('/upload', methods=["POST"])
 def upload():
-    lineNo = request.form.get("lineNo")
-    extNo = request.form.get("extNo")
-    dateRange = request.form.get("dateRange")
+    data = request.get_json()
+    lineNo = data.get("lineNo")
+    extNo = "All"
+    dateRange = data.get("dateRange")
+    if len(lineNo) == 8:
+        lineNo = "All"
     
     req = post_login()
     cookies = req.cookies
     if req.status_code != 302:
-        return "Failed"
+        print("Prematurely exiting")
+        return (req.json() , req.status_code)
     req = post_get_calls(cookies, lineNo, extNo, dateRange)
     req = post_download_calls(cookies)
     
     df = parse_req_to_df(req)
     df = process_df(df)
     
-    upload_df_to_drive(df)
-    
-    return "Succeeded"
+    try:
+        upload_df_to_drive(df)
+    except Exception as e:
+        print(e)
+        return ({"error": str(e)}, 401)
+    return (jsonify({"message": "Successfully uploaded"}), 200)

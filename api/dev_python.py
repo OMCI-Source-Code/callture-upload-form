@@ -41,7 +41,6 @@ def upload_basic():
                 supportsAllDrives=True)
         .execute()
     )
-    print(f'File ID: {file.get("id")}')
 
   except HttpError as error:
     print(f"An error occurred: {error}")
