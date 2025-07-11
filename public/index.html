@@ -3,13 +3,13 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Data Selection Form</title>
+    <title>Callture Upload Form</title>
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
     <div class="form-container">
-      <h1>Data Selection Form</h1>
-	  <hr class="divider">
+      <h1>Callture Upload Form</h1>
+      <hr class="divider" />
 
       <form id="dataForm">
         <!-- Date Range Section -->
@@ -27,28 +27,7 @@
           </div>
         </div>
 
-		<!--
-        <!-\- Folder Selection Section -\->
-        <div class="form-section">
-          <h2>Folder Selection</h2>
-          <div class="input-group">
-            <label for="folderPath">Select Folder:</label>
-            <input
-              type="text"
-              id="folderPath"
-              name="folderPath"
-              placeholder="Enter folder path or click browse..."
-              readonly
-            />
-            <button type="button" id="browseBtn" class="browse-btn">
-              Browse
-            </button>
-          </div>
-        </div>
-		
-		-->
-		
-		<hr class="divider">
+        <hr class="divider" />
 
         <!-- Checkboxes Section -->
         <div class="form-section">
@@ -137,71 +116,22 @@
             </button>
           </div>
         </div>
-		
-		<hr class="divider">
-		
+
+        <hr class="divider" />
+
         <!-- Submit Section -->
         <div class="form-section">
-          <button type="submit" class="submit-btn">Submit</button>
+          <button
+            type="submit"
+            action="mailto:terryluan12@gmail.com"
+            class="submit-btn"
+          >
+            Submit
+          </button>
         </div>
       </form>
     </div>
 
-    <script>
-	/*
-      // Browse button functionality (placeholder)
-      document
-        .getElementById("browseBtn")
-        .addEventListener("click", function () {
-          // In a real application, this would open a folder dialog
-          alert("Folder selection dialog would open here");
-        }); 
-		
-	*/
-
-      // Select/Deselect all functionality
-      document
-        .getElementById("selectAll")
-        .addEventListener("click", function () {
-          const checkboxes = document.querySelectorAll(
-            'input[name="contacts"]'
-          );
-          checkboxes.forEach((cb) => (cb.checked = true));
-        });
-
-      document
-        .getElementById("deselectAll")
-        .addEventListener("click", function () {
-          const checkboxes = document.querySelectorAll(
-            'input[name="contacts"]'
-          );
-          checkboxes.forEach((cb) => (cb.checked = false));
-        });
-
-      // Form submission handler
-      document
-        .getElementById("dataForm")
-        .addEventListener("submit", function (e) {
-          e.preventDefault();
-
-          const formData = new FormData(this);
-          const selectedContacts = [];
-
-          // Get all checked contacts
-          const checkboxes = document.querySelectorAll(
-            'input[name="contacts"]:checked'
-          );
-          checkboxes.forEach((cb) => selectedContacts.push(cb.value));
-
-          console.log("Form Data:", {
-            fromDate: formData.get("fromDate"),
-            toDate: formData.get("toDate"),
-            folderPath: formData.get("folderPath"),
-            selectedContacts: selectedContacts,
-          });
-
-          alert("Form submitted! Check console for data.");
-        });
-    </script>
+    <script src="index.js"></script>
   </body>
 </html>
