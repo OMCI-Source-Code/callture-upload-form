@@ -13,7 +13,7 @@ def post_login():
     req = httpx.post(login_url, data=form_data, headers=headers, timeout=10.0)
     return req
 
-call_log_url = "https://users.fibrehub.org/clnt/ExtCall/Logs"
+call_log_url = "https://users.fibrehub.org/clnt/Call/Logs"
 def post_get_calls(cookies, lineNo="All", extNo="All", dateRange=None):
     if not dateRange:
         formated_today = datetime.now().strftime("%d %b %Y")

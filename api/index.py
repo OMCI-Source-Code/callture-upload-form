@@ -1,8 +1,8 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from callture import post_login, post_get_calls, post_download_calls
+from api.callture import post_login, post_get_calls, post_download_calls
 from api.pandas_utility import parse_req_to_df, process_df
-from google_drive import upload_df_to_drive
+from api.google_drive import upload_df_to_drive
 
 app = Flask(__name__)
 CORS(app)

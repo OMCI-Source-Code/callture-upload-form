@@ -39,7 +39,7 @@ document
         const toDate = formData.get("toDate");
         const selectedNumbers = [];
 
-        const dateRange = formatDate(fromDate) + ' - ' + formatDate(toDate);
+        const dateRange = formatDate(fromDate) + ' 12:00 AM - ' + formatDate(toDate) + ' 11:59 PM';
 
         // Get all checked contacts
         const checkboxes = document.querySelectorAll(

@@ -6,7 +6,7 @@ from googleapiclient.http import MediaIoBaseUpload
 from google.oauth2 import service_account
 import os
 from dotenv import load_dotenv
-from callture import download_recording
+from api.callture import download_recording
 import pandas as pd
 
 load_dotenv(dotenv_path=".env.local")
@@ -138,7 +138,7 @@ def upload_df_to_drive(df: pd.DataFrame):
   
     current_folder = {}
     
-    for recording in df.head(5).itertuples():
+    for recording in df.itertuples():
         current_year = recording.Year
         current_month = recording.Month
         current_day = recording.Day
@@ -168,7 +168,9 @@ def upload_df_to_drive(df: pd.DataFrame):
         
         recording_id = recording.CDRID
         
-        name = "_".join(recording.Time.split()[::-1]) + "_" + str(recording.Line_No) + "_" + str(recording.Ext_No) + "_" + str(recording_id)
+        # For some reason, when downloading from the new interface, it does not include the extension number
+        # name = "_".join(recording.Time.split()[::-1]) + "_" + str(recording.Line_No) + "_" + str(recording.Ext_No) + "_" + str(recording_id)
+        name = "_".join(recording.Time.split()[::-1]) + "_" + str(recording.Line_No) + "_" + str(recording_id)
         description = "\n".join([f"{field}: {getattr(recording, field)}" for field in recording._fields[1:] if field not in ["Year", "Month", "Day"]])
 
 
