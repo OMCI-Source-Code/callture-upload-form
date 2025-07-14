@@ -6,8 +6,12 @@ from googleapiclient.http import MediaIoBaseUpload
 from google.oauth2 import service_account
 import os
 from dotenv import load_dotenv
-from api.callture import download_recording
+from callture import download_recording
 import pandas as pd
+import warnings
+
+from datetime import datetime, timedelta
+from collections import defaultdict
 
 load_dotenv()
 
@@ -100,7 +104,7 @@ def create_folder_path(path: str, root_id: str=os.environ.get("ROOT_FOLDER_ID"))
 
   Args:
       path (str): The folder path to create (e.g., "Parent/Child/Subfolder").
-      root_id (str): The ID of the root folder under which the path will be created.
+      root_id (str, optional): The ID of the root folder under which the path will be created. Defaults to os.environ.get("ROOT_FOLDER_ID").
 
   Returns:
       Dict[str, str]: A dictionary containing the 'id' and 'name' of the final folder in the path.
@@ -115,6 +119,17 @@ def create_folder_path(path: str, root_id: str=os.environ.get("ROOT_FOLDER_ID"))
   return folder
 
 def create_folder(name, parent_id=os.environ.get("ROOT_FOLDER_ID")):
+  """
+  Creates a specific folder in Google Drive under the specified root folder.
+
+  Args:
+      name (str): The folder to create
+      parent_id (str, optional): The id of the parent folder under which to create the folder. Defaults to os.environ.get("ROOT_FOLDER_ID").
+
+  Returns:
+      Dict[str, str]: A dictionary containing the 'id' and 'name' of the folder created.
+  """
+  
   service = get_service()
   folder_metadata = {
     'name': name,
@@ -132,6 +147,87 @@ def create_folder(name, parent_id=os.environ.get("ROOT_FOLDER_ID")):
     print(f"An error occurred: {error}")
     file = None
   return file
+
+def setup_date_folders(range: str, root_folder_id=os.environ.get("ROOT_FOLDER_ID")):
+  """
+  Checks if date folders are correctly set up for the given range, and creates them if not.
+
+  The structure will be:
+  - Root folder
+    - Year folders (e.g., 2024)
+      - Month folders (e.g., 01, 02, ...)
+        - Day folders (e.g., 01, 02, ...)
+
+  Args:
+      range (str): A string describing the date range to check/create folders for.
+                 Format: '%b %d %Y %I:%M %p - %b %d %Y %I:%M %p'
+      root_folder_id (str, optional): ID of the parent folder under which to organize the structure.
+                                    Defaults to os.environ.get("ROOT_FOLDER_ID").
+  
+  Returns:
+      Dict[str, Dict[str, Dict[str, str]]]: Nested dicts mapping [month][day][year] to folder ID.
+      Example: result["01"]["12"]["2020"] returns the folder ID for Jan 12, 2020.
+  """
+  
+  start_date, end_date = range.strip(" - ")
+  
+  # A list of dictionaries which relate folders to ids
+  # The dictionaries correspond to the year, month and day
+  year_id_map = {}
+  month_id_map = defaultdict(default_factory=dict())
+  day_id_map = defaultdict(default_factory=defaultdict(default_factory=dict()))
+  
+  
+  format = '%b %d %Y %I:%M %p'
+  
+  dt_start_date = datetime.strptime(start_date, format)
+  dt_end_date = datetime.strptime(end_date, format)
+  
+  current_date = dt_start_date
+  
+  current_year, current_month = None, None
+  
+  while current_date <= dt_end_date:
+    if current_date.strftime("%Y") != current_year:
+      current_year = current_date.strftime("%Y")
+      folder = get_drive_folder(current_year, root_folder_id)
+      if not folder:
+        folder = create_folder(current_year, root_folder_id)
+      elif len(folder) != 1:
+        warnings.warn(f"WARNING - Year: There are multiple folders under the parent folder {root_folder_id} with name {current_year}.")
+      else:
+        folder = folder[0]
+      year_id_map[current_year] = folder["id"]
+      
+    year_folder_id = year_id_map[current_year]
+    
+    if current_date.strftime("%m") != current_month:
+      current_month = current_date.strftime("%m")
+      folder = get_drive_folder(current_month, year_folder_id)
+      if not folder:
+        folder = create_folder(current_month, year_folder_id)
+      elif len(folder) != 1:
+        warnings.warn(f"WARNING - Month: There are multiple folders under the parent folder {year_folder_id} with name {current_month}.")
+      else:
+        folder = folder[0]
+      month_id_map[current_year][current_month] = folder["id"]
+    
+    month_folder_id = month_id_map[current_year][current_month]
+      
+      
+    current_day = current_date.strftime("%d")
+    folder = get_drive_folder(current_day, month_folder_id)
+    if not folder:
+      folder = create_folder(current_day, month_folder_id)
+    elif len(folder) != 1:
+      warnings.warn(f"WARNING - Day: There are multiple folders under the parent folder {month_folder_id} with name {current_day}.")
+    else:
+      folder = folder[0]
+    day_id_map[current_year][current_month][current_day] = folder["id"]
+    current_date += timedelta(days=1)
+
+  return day_id_map
+  
 
 def upload_df_to_drive(df: pd.DataFrame):
     pd.set_option('display.max_columns', None)
@@ -176,6 +272,27 @@ def upload_df_to_drive(df: pd.DataFrame):
 
         req = download_recording(recording_id)
         upload_to_drive(req.content, name, "audio/mpeg", description, day_folder_id)
+
+async def a_upload_df_to_drive(df: pd.DataFrame, day_id_map: Dict[str, Dict[str, Dict[str, str]]]):
+  pass
+
+async def a_upload_file_to_drive(recording: tuple, day_folder_id):
+  current_year = recording.Year
+  current_month = recording.Month
+  current_day = recording.Day
+  
+  recording_id = recording.CDRID
+  
+  # For some reason, when downloading from the new interface, it does not include the extension number
+  # name = "_".join(recording.Time.split()[::-1]) + "_" + str(recording.Line_No) + "_" + str(recording.Ext_No) + "_" + str(recording_id)
+  name = "_".join(recording.Time.split()[::-1]) + "_" + str(recording.Line_No) + "_" + str(recording_id)
+  description = "\n".join([f"{field}: {getattr(recording, field)}" for field in recording._fields[1:] if field not in ["Year", "Month", "Day"]])
+
+
+  req = download_recording(recording_id)
+  upload_to_drive(req.content, name, "audio/mpeg", description, day_folder_id)
+  
+  
 
 if __name__ == "__main__":
   folders = get_drive_folder()

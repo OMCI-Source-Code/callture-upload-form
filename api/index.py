@@ -2,7 +2,7 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 from api.callture import post_login, post_get_calls, post_download_calls
 from api.pandas_utility import parse_req_to_df, process_df
-from api.google_drive import upload_df_to_drive
+from api.google_drive import upload_df_to_drive, setup_date_folders
 
 app = Flask(__name__)
 CORS(app)
@@ -32,6 +32,7 @@ def upload():
     df = process_df(df)
     
     try:
+        date_folders = setup_date_folders(dateRange)
         upload_df_to_drive(df)
     except Exception as e:
         print(e)
