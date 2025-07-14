@@ -1,31 +1,56 @@
+"""
+google_drive.py
+
+This module provides utilities for anything Google Drive related
+
+Functions:
+    get_service
+    upload_to_drive
+    get_drive_folder
+    create_folder_path
+    create_folder
+    setup_date_folders
+    upload_df_to_drive
+    transfer_file
+    a_upload_df_to_drive
+    a_upload_file_to_drive
+
+Author: Terry Luan
+Date: 2025-07-14
+"""
+import asyncio
 import os
 import warnings
 from collections import defaultdict
 from datetime import datetime, timedelta
 from io import BytesIO
-from typing import Dict
 
 import pandas as pd
-from callture import download_recording
 from dotenv import load_dotenv
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from googleapiclient.http import MediaIoBaseUpload
 
+from api.callture import download_recording
+from api.pandas_utility import PersonRow
+
 load_dotenv()
+
+callture_semaphore = asyncio.Semaphore(20)
+google_semaphore = asyncio.Semaphore(20)
 
 
 def get_service():
 
-    SERVICE_ACCOUNT_FILE = "service_account.json"
-    SCOPES = [
+    service_account_file = "service_account.json"
+    scopes = [
         "https://www.googleapis.com/auth/drive.file",
         "https://www.googleapis.com/auth/drive.readonly",
     ]
 
     credentials = service_account.Credentials.from_service_account_file(
-        SERVICE_ACCOUNT_FILE, scopes=SCOPES
+        service_account_file, scopes=scopes
     )
     service = build("drive", "v3", credentials=credentials)
     return service
@@ -73,7 +98,7 @@ def get_drive_folder(name=None, root_id=os.environ.get("ROOT_FOLDER_ID")):
             Defaults to the value of the "ROOT_FOLDER_ID" environment variable.
 
     Returns:
-        List[Dict[str, str]]: A list of folders matching the name, where each folder is represented
+        List[dict[str, str]]: A list of folders matching the name, where each folder is represented
         as a dictionary with 'id' and 'name' keys.
     """
     try:
@@ -87,7 +112,7 @@ def get_drive_folder(name=None, root_id=os.environ.get("ROOT_FOLDER_ID")):
         )
 
         results = (
-            service.files()
+            service.files()  # pylint: disable=maybe-no-member
             .list(
                 q=query,
                 driveId=os.environ.get("DRIVE_ID"),
@@ -101,28 +126,27 @@ def get_drive_folder(name=None, root_id=os.environ.get("ROOT_FOLDER_ID")):
 
     except HttpError as error:
         print(f"An error occurred: {error}")
-        file = None
 
     return results["files"]
 
 
-def create_folder_path(path: str, root_id: str = os.environ.get("ROOT_FOLDER_ID")):
+def create_folder_path(path: str, root_id=os.environ.get("ROOT_FOLDER_ID")):
     """
     Creates a folder path in Google Drive under the specified root folder.
 
     Args:
         path (str): The folder path to create (e.g., "Parent/Child/Subfolder").
-        root_id (str, optional): The ID of the root folder under which the path will be created. 
+        root_id (str, optional): The ID of the root folder under which the path will be created.
                                  Defaults to os.environ.get("ROOT_FOLDER_ID").
 
     Returns:
-        Dict[str, str]: A dictionary containing the 'id' and 'name' of the final folder in the path.
+        dict[str, str]: A dictionary containing the 'id' and 'name' of the final folder in the path.
     """
-    path = path.split("/")
+    path_dir = path.split("/")
 
     current_parent_id = root_id
     folder = None
-    for current_folder in path:
+    for current_folder in path_dir:
         folder = create_folder(current_folder, current_parent_id)
         current_parent_id = folder.get("id")
     return folder
@@ -134,11 +158,11 @@ def create_folder(name, parent_id=os.environ.get("ROOT_FOLDER_ID")):
 
     Args:
         name (str): The folder to create
-        parent_id (str, optional): The id of the parent folder under which to create the folder. 
+        parent_id (str, optional): The id of the parent folder under which to create the folder.
                                    Defaults to os.environ.get("ROOT_FOLDER_ID").
 
     Returns:
-        Dict[str, str]: A dictionary containing the 'id' and 'name' of the folder created.
+        dict[str, str]: A dictionary containing the 'id' and 'name' of the folder created.
     """
 
     service = get_service()
@@ -150,7 +174,7 @@ def create_folder(name, parent_id=os.environ.get("ROOT_FOLDER_ID")):
 
     try:
         file = (
-            service.files()
+            service.files()  # pylint: disable=no-member
             .create(body=folder_metadata, fields="id, name", supportsAllDrives=True)
             .execute()
         )
@@ -160,7 +184,9 @@ def create_folder(name, parent_id=os.environ.get("ROOT_FOLDER_ID")):
     return file
 
 
-def setup_date_folders(range: str, root_folder_id=os.environ.get("ROOT_FOLDER_ID")):
+def setup_date_folders(
+    date_range: str, root_folder_id=os.environ.get("ROOT_FOLDER_ID")
+):
     """
     Checks if date folders are correctly set up for the given range, and creates them if not.
 
@@ -171,32 +197,34 @@ def setup_date_folders(range: str, root_folder_id=os.environ.get("ROOT_FOLDER_ID
           - Day folders (e.g., 01, 02, ...)
 
     Args:
-        range (str): A string describing the date range to check/create folders for.
+        date_range (str): A string describing the date range to check/create folders for.
                    Format: '%b %d %Y %I:%M %p - %b %d %Y %I:%M %p'
         root_folder_id (str, optional): ID of the parent folder under which to organize the structure.
                                       Defaults to os.environ.get("ROOT_FOLDER_ID").
 
     Returns:
-        Dict[str, Dict[str, Dict[str, str]]]: Nested dicts mapping [month][day][year] to folder ID.
+        dict[str, dict[str, dict[str, str]]]: Nested dicts mapping [month][day][year] to folder ID.
         Example: result["01"]["12"]["2020"] returns the folder ID for Jan 12, 2020.
     """
 
-    start_date, end_date = range.strip(" - ")
+    start_date, end_date = date_range.split(" - ")
 
     # A list of dictionaries which relate folders to ids
     # The dictionaries correspond to the year, month and day
     year_id_map = {}
-    month_id_map = defaultdict(default_factory=dict())
-    day_id_map = defaultdict(default_factory=defaultdict(default_factory=dict()))
+    month_id_map: dict[str, dict[str, str]] = defaultdict(dict)
+    day_id_map: dict[str, dict[str, dict[str, str]]] = defaultdict(
+        default_factory=defaultdict(dict)
+    )
 
-    format = "%b %d %Y %I:%M %p"
+    date_format = "%b %d %Y %I:%M %p"
 
-    dt_start_date = datetime.strptime(start_date, format)
-    dt_end_date = datetime.strptime(end_date, format)
+    dt_start_date = datetime.strptime(start_date, date_format)
+    dt_end_date = datetime.strptime(end_date, date_format)
 
     current_date = dt_start_date
 
-    current_year, current_month = None, None
+    current_year, current_month = "", ""
 
     while current_date <= dt_end_date:
         if current_date.strftime("%Y") != current_year:
@@ -248,7 +276,7 @@ def setup_date_folders(range: str, root_folder_id=os.environ.get("ROOT_FOLDER_ID
 def upload_df_to_drive(df: pd.DataFrame):
     # pd.set_option('display.max_columns', None)
 
-    current_folder = {}
+    current_folder: dict[str, tuple[int, str]] = {}
 
     for recording in df.itertuples():
         current_year = recording.Year
@@ -300,19 +328,7 @@ def upload_df_to_drive(df: pd.DataFrame):
         upload_to_drive(req.content, name, "audio/mpeg", description, day_folder_id)
 
 
-def a_upload_df_to_drive(
-    df: pd.DataFrame, day_id_map: Dict[str, Dict[str, Dict[str, str]]]
-):
-    pd.set_option("display.max_columns", None)
-
-    pass
-
-
-async def a_upload_file_to_drive(recording: tuple, day_folder_id):
-    current_year = recording.Year
-    current_month = recording.Month
-    current_day = recording.Day
-
+async def transfer_file(recording: PersonRow, day_folder_id: str):
     recording_id = recording.CDRID
 
     # For some reason, when downloading from the new interface, it does not include the extension number
@@ -332,5 +348,57 @@ async def a_upload_file_to_drive(recording: tuple, day_folder_id):
         ]
     )
 
-    req = download_recording(recording_id)
-    upload_to_drive(req.content, name, "audio/mpeg", description, day_folder_id)
+    async with callture_semaphore:
+        req = await download_recording(recording_id)
+
+    async with google_semaphore:
+        await a_upload_file_to_drive(
+            req.content, name, "audio/mpeg", description, day_folder_id
+        )
+
+
+async def a_upload_df_to_drive(
+    df: pd.DataFrame, day_id_map: dict[str, dict[str, dict[str, str]]]
+):
+    pd.set_option("display.max_columns", None)
+
+    await asyncio.gather(
+        *(
+            transfer_file(
+                recording, day_id_map[recording.Year][recording.Month][recording.Day]
+            )
+            for recording in df.itertuples()
+        )
+    )
+
+
+async def a_upload_file_to_drive(
+    object_bytes, name, mimetype, description, root_id=os.environ.get("ROOT_FOLDER_ID")
+):
+
+    object_stream = BytesIO(object_bytes)
+
+    try:
+        service = get_service()
+
+        file_metadata = {"name": name, "parents": [root_id], "description": description}
+        media_stream = MediaIoBaseUpload(
+            object_stream, mimetype=mimetype, resumable=True
+        )
+        # pylint: disable=no-member
+        file = (
+            service.files()
+            .create(
+                body=file_metadata,
+                media_body=media_stream,
+                fields="id",
+                supportsAllDrives=True,
+            )
+            .execute()
+        )
+
+    except HttpError as error:
+        print(f"An error occurred: {error}")
+        file = None
+
+    return file.get("id")

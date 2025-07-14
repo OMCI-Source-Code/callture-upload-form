@@ -1,3 +1,20 @@
+"""
+callture.py
+
+This module provides utilities for anything Callture related
+
+Functions:
+    post_login
+    post_get_calls
+    post_download_calls
+    download_recording
+
+Misc variables:
+
+
+Author: Terry Luan
+Date: 2025-07-14
+"""
 import os
 from datetime import datetime
 
@@ -9,7 +26,6 @@ load_dotenv()
 LOGIN_URL = "https://users.fibrehub.org/clnt"
 CALL_LOG_URL = "https://users.fibrehub.org/clnt/Call/Logs"
 DOWNLOAD_URL = f"https://users.fibrehub.org/FileHandler/downloadfile?TypeID=4&ClientID=${os.environ.get('CALLTURE_CLIENT_ID')}&LineNo=${os.environ.get('CALLTURE_LINE_NO')}&FileID="
-
 
 def post_login():
     headers = {}
@@ -24,7 +40,7 @@ def post_login():
 def post_get_calls(cookies, line_no="All", ext_no="All", date_range=None):
     if not date_range:
         formated_today = datetime.now().strftime("%d %b %Y")
-        dateRange = formated_today + " - " + formated_today
+        date_range = formated_today + " - " + formated_today
 
     form_data = {
         "LineNo": line_no,
