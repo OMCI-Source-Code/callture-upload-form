@@ -1,18 +1,17 @@
+import os
+import warnings
+from collections import defaultdict
+from datetime import datetime, timedelta
 from io import BytesIO
+from typing import Dict
+
+import pandas as pd
+from callture import download_recording
+from dotenv import load_dotenv
+from google.oauth2 import service_account
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from googleapiclient.http import MediaIoBaseUpload
-from google.oauth2 import service_account
-import os
-from dotenv import load_dotenv
-from callture import download_recording
-import pandas as pd
-import warnings
-
-from typing import Dict
-
-from datetime import datetime, timedelta
-from collections import defaultdict
 
 load_dotenv()
 
@@ -113,7 +112,8 @@ def create_folder_path(path: str, root_id: str = os.environ.get("ROOT_FOLDER_ID"
 
     Args:
         path (str): The folder path to create (e.g., "Parent/Child/Subfolder").
-        root_id (str, optional): The ID of the root folder under which the path will be created. Defaults to os.environ.get("ROOT_FOLDER_ID").
+        root_id (str, optional): The ID of the root folder under which the path will be created. 
+                                 Defaults to os.environ.get("ROOT_FOLDER_ID").
 
     Returns:
         Dict[str, str]: A dictionary containing the 'id' and 'name' of the final folder in the path.
@@ -134,7 +134,8 @@ def create_folder(name, parent_id=os.environ.get("ROOT_FOLDER_ID")):
 
     Args:
         name (str): The folder to create
-        parent_id (str, optional): The id of the parent folder under which to create the folder. Defaults to os.environ.get("ROOT_FOLDER_ID").
+        parent_id (str, optional): The id of the parent folder under which to create the folder. 
+                                   Defaults to os.environ.get("ROOT_FOLDER_ID").
 
     Returns:
         Dict[str, str]: A dictionary containing the 'id' and 'name' of the folder created.

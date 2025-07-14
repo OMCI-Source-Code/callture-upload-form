@@ -1,5 +1,6 @@
 from api.callture import post_login
 
+
 def test_login():
     req = post_login()
     assert req.status_code == 302

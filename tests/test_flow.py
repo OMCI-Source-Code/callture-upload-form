@@ -1,6 +1,7 @@
-from api.callture import post_login, post_get_calls, post_download_calls
-from api.pandas_utility import parse_req_to_df, process_df
+from api.callture import post_download_calls, post_get_calls, post_login
 from api.google_drive import upload_df_to_drive
+from api.pandas_utility import parse_req_to_df, process_df
+
 
 def test_single_line_upload():
     lineNo = "All"
