@@ -19,13 +19,18 @@ document
     });
 
 
-function formatDate(formDate) {
+function formatDate(formDate, formTime) {
     const date = new Date(formDate);
+	
+	hr = formTime.slice(0, 2)
+	min = formTime.slice(3)
+	date.setHours(hr, min)
+	
+    const dtf = new Intl.DateTimeFormat('en', { year: 'numeric', month: 'short', day: '2-digit', hour: 'numeric', minute: 'numeric' });
+	// interesting const name choice :)
+    const [{ value: month }, , { value: day }, , { value: year }, , {value: hour}, , {value: minute}] = dtf.formatToParts(date);
 
-    const dtf = new Intl.DateTimeFormat('en', { year: 'numeric', month: 'short', day: '2-digit' });
-    const [{ value: month }, , { value: day }, , { value: year }] = dtf.formatToParts(date);
-
-    return day + ' ' + month + ' ' + year;
+    return day + ' ' + month + ' ' + year + ' ' + hour + ' ' + minute;
 }
 
 // Form submission handler
@@ -36,11 +41,13 @@ document
         const formData = new FormData(this);
 
         const fromDate = formData.get("fromDate");
+		const fromTime = formData.get("fromTime");
         const toDate = formData.get("toDate");
+		const toTime = formData.get("toTime");
         const selectedNumbers = [];
 
-        const dateRange = formatDate(fromDate) + ' 12:00 AM - ' + formatDate(toDate) + ' 11:59 PM';
-
+        const dateRange = formatDate(fromDate, fromTime) + ' - ' + formatDate(toDate, toTime);
+		console.log(dateRange)
         // Get all checked contacts
         const checkboxes = document.querySelectorAll(
             'input[name="contacts"]:checked'
