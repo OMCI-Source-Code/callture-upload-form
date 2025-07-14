@@ -7,11 +7,13 @@ from api.google_drive import upload_df_to_drive, setup_date_folders
 app = Flask(__name__)
 CORS(app)
 
-@app.route('/login', methods=["POST"])
+
+@app.route("/login", methods=["POST"])
 def login():
     pass
 
-@app.route('/upload', methods=["POST"])
+
+@app.route("/upload", methods=["POST"])
 def upload():
     data = request.get_json()
     lineNo = data.get("lineNo")
@@ -19,24 +21,24 @@ def upload():
     dateRange = data.get("dateRange")
     if len(lineNo) == 8:
         lineNo = "All"
-    
+
     req = post_login()
     cookies = req.cookies
     if req.status_code != 302:
         print("Prematurely exiting")
-        return (req.json() , req.status_code)
+        return (req.json(), req.status_code)
     req = post_get_calls(cookies, lineNo, extNo, dateRange)
     req = post_download_calls(cookies)
-    
+
     df = parse_req_to_df(req)
     df = process_df(df)
-    
+
     try:
         # Synchronous uploading
         # upload_df_to_drive(df)
-        
+
         date_folders = setup_date_folders(dateRange)
-        
+
     except Exception as e:
         print(e)
         return ({"error": str(e)}, 401)
