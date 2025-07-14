@@ -32,8 +32,11 @@ def upload():
     df = process_df(df)
     
     try:
+        # Synchronous uploading
+        # upload_df_to_drive(df)
+        
         date_folders = setup_date_folders(dateRange)
-        upload_df_to_drive(df)
+        
     except Exception as e:
         print(e)
         return ({"error": str(e)}, 401)

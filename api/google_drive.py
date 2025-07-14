@@ -10,6 +10,8 @@ from callture import download_recording
 import pandas as pd
 import warnings
 
+from typing import Dict
+
 from datetime import datetime, timedelta
 from collections import defaultdict
 
@@ -230,7 +232,7 @@ def setup_date_folders(range: str, root_folder_id=os.environ.get("ROOT_FOLDER_ID
   
 
 def upload_df_to_drive(df: pd.DataFrame):
-    pd.set_option('display.max_columns', None)
+    # pd.set_option('display.max_columns', None)
   
     current_folder = {}
     
@@ -273,7 +275,9 @@ def upload_df_to_drive(df: pd.DataFrame):
         req = download_recording(recording_id)
         upload_to_drive(req.content, name, "audio/mpeg", description, day_folder_id)
 
-async def a_upload_df_to_drive(df: pd.DataFrame, day_id_map: Dict[str, Dict[str, Dict[str, str]]]):
+def a_upload_df_to_drive(df: pd.DataFrame, day_id_map: Dict[str, Dict[str, Dict[str, str]]]):
+  pd.set_option('display.max_columns', None)
+  
   pass
 
 async def a_upload_file_to_drive(recording: tuple, day_folder_id):
@@ -291,9 +295,3 @@ async def a_upload_file_to_drive(recording: tuple, day_folder_id):
 
   req = download_recording(recording_id)
   upload_to_drive(req.content, name, "audio/mpeg", description, day_folder_id)
-  
-  
-
-if __name__ == "__main__":
-  folders = get_drive_folder()
-    
