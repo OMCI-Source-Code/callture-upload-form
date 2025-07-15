@@ -5,7 +5,7 @@ This module provides utilities for anything pandas related
 
 Classes:
     PersonRow
-    
+
 Functions:
     parse_req_to_df
     process_df

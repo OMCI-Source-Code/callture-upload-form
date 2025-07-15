@@ -16,6 +16,7 @@ Functions:
 Author: Terry Luan
 Date: 2025-07-14
 """
+
 import asyncio
 import os
 import warnings
@@ -29,10 +30,9 @@ from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from googleapiclient.http import MediaIoBaseUpload
 
-from api.callture import download_recording, a_download_recording
+from api.callture import a_download_recording, download_recording
 # from api.callture import a_download_recording
 from api.pandas_utility import PersonRow
-
 
 callture_semaphore = asyncio.Semaphore(100)
 google_semaphore = asyncio.Semaphore(100)
@@ -58,7 +58,7 @@ def upload_to_drive(
 ):
     print(f"Uploading {recording.CDRID}")
     recording_id = recording.CDRID
-    
+
     # For some reason, when downloading from the new interface, it does not include the extension number
     # name = "_".join(recording.Time.split()[::-1]) + "_" + str(recording.Line_No) + "_" + str(recording.Ext_No) + "_" + str(recording_id)
     name = (
@@ -75,7 +75,7 @@ def upload_to_drive(
             if field not in ["Year", "Month", "Day"]
         ]
     )
-    mime_type="audio/mpeg"
+    mime_type = "audio/mpeg"
 
     object_stream = BytesIO(object_bytes)
 
@@ -234,7 +234,7 @@ def setup_date_folders(
         lambda: defaultdict(dict)
     )
 
-    date_format = '%d %b %Y'
+    date_format = "%d %b %Y"
 
     dt_start_date = datetime.strptime(start_date, date_format)
     dt_end_date = datetime.strptime(end_date, date_format)
@@ -290,12 +290,18 @@ def setup_date_folders(
     return day_id_map
 
 
-def upload_df_to_drive(df: pd.DataFrame, day_id_map: dict[str, dict[str, dict[str, str]]], async_enabled: bool = False, use_semaphore: bool = False, batched: bool = False, batch_size: int = 0):
+def upload_df_to_drive(
+    df: pd.DataFrame,
+    day_id_map: dict[str, dict[str, dict[str, str]]],
+    async_enabled: bool = False,
+    use_semaphore: bool = False,
+):
     if async_enabled:
         asyncio.run(_upload_df_async(df, day_id_map, use_semaphore))
     else:
         _upload_df_sync(df, day_id_map)
-        
+
+
 def _upload_df_sync(df, day_id_map):
     print("Starting to Upload Sync")
     for recording in df.itertuples():
@@ -303,7 +309,12 @@ def _upload_df_sync(df, day_id_map):
         req = download_recording(recording)
         upload_to_drive(recording, req.content, day_folder_id)
 
-async def _upload_df_async(df: pd.DataFrame, day_id_map: dict[str, dict[str, dict[str, str]]], use_semaphore: bool = False):
+
+async def _upload_df_async(
+    df: pd.DataFrame,
+    day_id_map: dict[str, dict[str, dict[str, str]]],
+    use_semaphore: bool = False,
+):
     print("Starting to Upload Async")
     # async with asyncio.TaskGroup() as tg:
     #     tasks = []
@@ -316,22 +327,21 @@ async def _upload_df_async(df: pd.DataFrame, day_id_map: dict[str, dict[str, dic
     await asyncio.gather(
         *(
             transfer_file(
-                recording, day_id_map[recording.Year][recording.Month][recording.Day], use_semaphore
+                recording,
+                day_id_map[recording.Year][recording.Month][recording.Day],
+                use_semaphore,
             )
             for recording in df.itertuples()
         )
     )
+
 
 async def transfer_file(recording: PersonRow, day_folder_id: str, use_semaphore: bool):
     if use_semaphore:
         async with callture_semaphore:
             req = await a_download_recording(recording)
         async with google_semaphore:
-            await upload_to_drive(
-                recording, req.content, day_folder_id
-            )
+            await upload_to_drive(recording, req.content, day_folder_id)
     else:
         req = await a_download_recording(recording)
-        await upload_to_drive(
-            recording, req.content, day_folder_id
-        )
+        await upload_to_drive(recording, req.content, day_folder_id)

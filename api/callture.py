@@ -15,6 +15,7 @@ Misc variables:
 Author: Terry Luan
 Date: 2025-07-14
 """
+
 import os
 from datetime import datetime
 
@@ -25,6 +26,7 @@ from api.pandas_utility import PersonRow
 LOGIN_URL = "https://users.fibrehub.org/clnt"
 CALL_LOG_URL = "https://users.fibrehub.org/clnt/Call/Logs"
 DOWNLOAD_URL = f"https://users.fibrehub.org/FileHandler/downloadfile?TypeID=4&ClientID={os.environ.get('CALLTURE_CLIENT_ID')}&LineNo="
+
 
 def post_login():
     headers = {}
@@ -69,7 +71,7 @@ def download_recording(recording: PersonRow):
 
 
 async def a_download_recording(recording: PersonRow):
-    print(f"Downloading {recording_id}")
+    print(f"Downloading {recording.CDRID}")
     line_number = recording.Line_No
     recording_id = recording.CDRID
     curr_file_url = DOWNLOAD_URL + str(line_number) + "&FileID=" + str(recording_id)
