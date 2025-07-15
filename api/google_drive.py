@@ -4,7 +4,7 @@ google_drive.py
 This module provides utilities for anything Google Drive related
 
 Functions:
-    create_service
+    get_service
     upload_to_drive
     get_drive_folder
     create_folder_path
@@ -12,8 +12,6 @@ Functions:
     setup_date_folders
     upload_df_to_drive
     transfer_file
-    a_upload_df_to_drive
-    a_upload_to_drive
 
 Author: Terry Luan
 Date: 2025-07-14
@@ -58,7 +56,7 @@ def get_service():
 
 
 def upload_to_drive(
-    recording, object_bytes: bytes, root_id=os.environ.get("ROOT_FOLDER_ID")
+    recording, object_bytes: bytes, root_id=os.environ.get("ROOT_FOLDER_ID"), async_enabled: bool
 ):
     # print(f"Uploading {record_id}")
     recording_id = recording.CDRID
@@ -294,32 +292,20 @@ def setup_date_folders(
     return day_id_map
 
 
-def upload_df_to_drive(df: pd.DataFrame, day_id_map: dict[str, dict[str, dict[str, str]]]):
+def upload_df_to_drive(df: pd.DataFrame, day_id_map: dict[str, dict[str, dict[str, str]]], async_enabled: bool = False, use_semaphore: bool = False, batched: bool = False, batch_size: int = 0):
+    if not async_enabled:
+        _upload_df_sync(df, day_id_map)
+    else:
+        asyncio.run(_upload_df_async(use_semaphore, batched, batch_size))
+        
+def _upload_df_sync(df, day_id_map):
     print("Starting to Upload Sync")
-
     for recording in df.itertuples():
         day_folder_id = day_id_map[recording.Year][recording.Month][recording.Day]
         req = download_recording(recording)
         upload_to_drive(recording, req.content, day_folder_id)
 
-
-async def transfer_file(recording: PersonRow, day_folder_id: str, use_semaphore: bool):
-    if use_semaphore:
-        async with callture_semaphore:
-            req = await a_download_recording(recording)
-        async with google_semaphore:
-            await a_upload_to_drive(
-                recording, req.content, day_folder_id
-            )
-    else:
-        req = await a_download_recording(recording)
-        await a_upload_to_drive(
-            recording, req.content, day_folder_id
-        )
-
-async def a_upload_df_to_drive(
-    df: pd.DataFrame, day_id_map: dict[str, dict[str, dict[str, str]]], use_semaphore: bool, batched: bool, batch_size: int
-):
+async def _upload_df_async(df: pd.DataFrame, day_id_map: dict[str, dict[str, dict[str, str]]], use_semaphore: bool = False):
     print("Starting to Upload Async")
     # async with asyncio.TaskGroup() as tg:
     #     tasks = []
@@ -338,54 +324,16 @@ async def a_upload_df_to_drive(
         )
     )
 
-
-async def a_upload_to_drive(
-    recording: PersonRow, object_bytes: bytes, root_id=os.environ.get("ROOT_FOLDER_ID")
-):
-    # print(f"Uploading {record_id}")
-    recording_id = recording.CDRID
-    
-    # For some reason, when downloading from the new interface, it does not include the extension number
-    # name = "_".join(recording.Time.split()[::-1]) + "_" + str(recording.Line_No) + "_" + str(recording.Ext_No) + "_" + str(recording_id)
-    name = (
-        "_".join(recording.Time.split()[::-1])
-        + "_"
-        + str(recording.Line_No)
-        + "_"
-        + str(recording_id)
-    )
-    description = "\n".join(
-        [
-            f"{field}: {getattr(recording, field)}"
-            for field in recording._fields[1:]
-            if field not in ["Year", "Month", "Day"]
-        ]
-    )
-    mime_type="audio/mpeg"
-
-    object_stream = BytesIO(object_bytes)
-
-    try:
-        service = get_service()
-
-        file_metadata = {"name": name, "parents": [root_id], "description": description}
-        media_stream = MediaIoBaseUpload(
-            object_stream, mimetype=mime_type, resumable=True
-        )
-        # pylint: disable=no-member
-        file = (
-            service.files()
-            .create(
-                body=file_metadata,
-                media_body=media_stream,
-                fields="id",
-                supportsAllDrives=True,
+async def transfer_file(recording: PersonRow, day_folder_id: str, use_semaphore: bool):
+    if use_semaphore:
+        async with callture_semaphore:
+            req = await a_download_recording(recording)
+        async with google_semaphore:
+            await upload_to_drive(
+                recording, req.content, day_folder_id
             )
-            .execute()
+    else:
+        req = await a_download_recording(recording)
+        await upload_to_drive(
+            recording, req.content, day_folder_id
         )
-
-    except HttpError as error:
-        print(f"An error occurred: {error}")
-        file = None
-
-    return file.get("id")

@@ -21,7 +21,7 @@ from datetime import datetime
 import httpx
 from dotenv import load_dotenv
 
-from pandas_utility import PersonRow
+from api.pandas_utility import PersonRow
 
 load_dotenv()
 

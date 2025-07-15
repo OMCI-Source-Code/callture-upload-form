@@ -1,5 +1,5 @@
 
-from api.google_drive import setup_date_folders, upload_df_to_drive, a_upload_df_to_drive, batched_a_upload_df_to_drive
+from api.google_drive import setup_date_folders, upload_df_to_drive
 
 from api.pandas_utility import process_df
 import pandas as pd
@@ -25,10 +25,10 @@ if __name__ == "__main__":
     
     
     # Batched async
-    a_sem_start = time.perf_counter()
-    asyncio.run(upload_df_to_drive(df, day_id_map, True))
-    a_sem_end = time.perf_counter()
-    print(f"Async Sem - It took {a_sem_end - a_sem_start} seconds to run")
+    # a_sem_start = time.perf_counter()
+    # asyncio.run(upload_df_to_drive(df, day_id_map, True))
+    # a_sem_end = time.perf_counter()
+    # print(f"Async Sem - It took {a_sem_end - a_sem_start} seconds to run")
     
     # Errors because Google doesn't support async fully
     # a_nosem_start = time.perf_counter()
