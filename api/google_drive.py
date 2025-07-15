@@ -13,7 +13,7 @@ Functions:
     upload_df_to_drive
     transfer_file
     a_upload_df_to_drive
-    a_upload_file_to_drive
+    a_upload_to_drive
 
 Author: Terry Luan
 Date: 2025-07-14
@@ -38,8 +38,8 @@ from api.pandas_utility import PersonRow
 
 load_dotenv()
 
-callture_semaphore = asyncio.Semaphore(20)
-google_semaphore = asyncio.Semaphore(20)
+callture_semaphore = asyncio.Semaphore(100)
+google_semaphore = asyncio.Semaphore(100)
 
 
 def get_service():
@@ -58,8 +58,9 @@ def get_service():
 
 
 def upload_to_drive(
-    object_bytes, name, mimetype, description, root_id=os.environ.get("ROOT_FOLDER_ID")
+    record_id, object_bytes, name, mimetype, description, root_id=os.environ.get("ROOT_FOLDER_ID")
 ):
+    # print(f"Uploading {record_id}")
 
     object_stream = BytesIO(object_bytes)
 
@@ -274,37 +275,11 @@ def setup_date_folders(
     return day_id_map
 
 
-def upload_df_to_drive(df: pd.DataFrame):
-    # pd.set_option('display.max_columns', None)
-
-    current_folder: dict[str, tuple[int, str]] = {}
+def upload_df_to_drive(df: pd.DataFrame, day_id_map: dict[str, dict[str, dict[str, str]]]):
+    print("Starting to Upload Sync")
 
     for recording in df.itertuples():
-        current_year = recording.Year
-        current_month = recording.Month
-        current_day = recording.Day
-        if "Year" not in current_folder or current_folder["Year"][0] != current_year:
-            folder = get_drive_folder(current_year)
-            if not folder:
-                folder = [create_folder(current_year)]
-            folder = folder[0]
-            current_folder["Year"] = (current_year, folder["id"])
-
-        if "Month" not in current_folder or current_folder["Month"][0] != current_month:
-            folder = get_drive_folder(current_month, current_folder["Year"][1])
-            if not folder:
-                folder = [create_folder(current_month, current_folder["Year"][1])]
-            folder = folder[0]
-            current_folder["Month"] = (current_month, folder["id"])
-
-        if "Day" not in current_folder or current_folder["Day"][0] != current_day:
-            folder = get_drive_folder(current_day, current_folder["Month"][1])
-            if not folder:
-                folder = [create_folder(current_day, current_folder["Month"][1])]
-            folder = folder[0]
-            current_folder["Day"] = (current_day, folder["id"])
-
-        day_folder_id = current_folder["Day"][1]
+        day_folder_id = day_id_map[recording.Year][recording.Month][recording.Day]
 
         recording_id = recording.CDRID
 
@@ -326,10 +301,10 @@ def upload_df_to_drive(df: pd.DataFrame):
         )
 
         req = download_recording(recording.Line_No, recording_id)
-        upload_to_drive(req.content, name, "audio/mpeg", description, day_folder_id)
+        upload_to_drive(recording_id, req.content, name, "audio/mpeg", description, day_folder_id)
 
 
-async def transfer_file(recording: PersonRow, day_folder_id: str):
+async def transfer_file(recording: PersonRow, day_folder_id: str, use_semaphore: bool):
     recording_id = recording.CDRID
 
     # For some reason, when downloading from the new interface, it does not include the extension number
@@ -349,44 +324,47 @@ async def transfer_file(recording: PersonRow, day_folder_id: str):
         ]
     )
 
-    async with callture_semaphore:
-        # req = download_recording(recording.Line_No, recording_id)
+    if use_semaphore:
+        async with callture_semaphore:
+            req = await a_download_recording(recording.Line_No, recording_id)
+        async with google_semaphore:
+            await a_upload_to_drive(
+                recording_id, req.content, name, "audio/mpeg", description, day_folder_id
+            )
+    else:
         req = await a_download_recording(recording.Line_No, recording_id)
-    async with google_semaphore:
-        await a_upload_file_to_drive(
+        await a_upload_to_drive(
             recording_id, req.content, name, "audio/mpeg", description, day_folder_id
         )
 
 
 async def a_upload_df_to_drive(
-    df: pd.DataFrame, day_id_map: dict[str, dict[str, dict[str, str]]]
+    df: pd.DataFrame, day_id_map: dict[str, dict[str, dict[str, str]]], use_semaphore: bool
 ):
-    pd.set_option("display.max_columns", None)
-    
-    async with asyncio.TaskGroup() as tg:
-        tasks = []
-        for recording in df.itertuples():
-            tasks.append(tg.create_task(
-                transfer_file(
-                    recording, day_id_map[recording.Year][recording.Month][recording.Day]
-                )
-            ))
-
-    # async with general_semaphore:
-    #     await asyncio.gather(
-    #         *(
+    print("Starting to Upload Async")
+    # async with asyncio.TaskGroup() as tg:
+    #     tasks = []
+    #     for recording in df.itertuples():
+    #         tasks.append(tg.create_task(
     #             transfer_file(
     #                 recording, day_id_map[recording.Year][recording.Month][recording.Day]
     #             )
-    #             for recording in df.itertuples()
-    #         )
-    #     )
+    #         ))
+            
+    await asyncio.gather(
+        *(
+            transfer_file(
+                recording, day_id_map[recording.Year][recording.Month][recording.Day], use_semaphore
+            )
+            for recording in df.itertuples()
+        )
+    )
 
 
-async def a_upload_file_to_drive(
+async def a_upload_to_drive(
     record_id, object_bytes, name, mimetype, description, root_id=os.environ.get("ROOT_FOLDER_ID")
 ):
-    print(f"Uploading {record_id}")
+    # print(f"Uploading {record_id}")
 
     object_stream = BytesIO(object_bytes)
 

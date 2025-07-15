@@ -61,16 +61,15 @@ def post_download_calls(cookies):
 
 
 def download_recording(line_number, recording_id):
-    print(f"Downloading Recording {recording_id}")
+    # print(f"Downloading Recording {recording_id}")
     curr_file_url = DOWNLOAD_URL + str(line_number) + "&FileID=" + str(recording_id)
     req = httpx.get(curr_file_url, timeout=10.0)
     return req
 
 
 async def a_download_recording(line_number, recording_id):
-    print(f"Downloading Recording {recording_id}")
+    # print(f"Downloading Recording {recording_id}")
     curr_file_url = DOWNLOAD_URL + str(line_number) + "&FileID=" + str(recording_id)
     async with httpx.AsyncClient() as client:
-        req = await client.get(curr_file_url, timeout=120.0)
-    print(f"Success! {recording_id}")
+        req = await client.get(curr_file_url, timeout=600.0)
     return req
