@@ -22,15 +22,22 @@ document
 function formatDate(formDate, formTime) {
     const date = new Date(formDate);
 	
-	hr = formTime.slice(0, 2)
-	min = formTime.slice(3)
+	const hr = parseInt(formTime.slice(0, 2),10)
+	const min = parseInt(formTime.slice(3),10)
 	date.setHours(hr, min)
 	
-    const dtf = new Intl.DateTimeFormat('en', { year: 'numeric', month: 'short', day: '2-digit', hour: 'numeric', minute: 'numeric' });
+    const dtf = new Intl.DateTimeFormat('en', { 
+        year: 'numeric', 
+        month: 'short', 
+        day: '2-digit', 
+        hour: 'numeric', 
+        minute: 'numeric',
+        hour12: true 
+    });
 	// interesting const name choice :)
-    const [{ value: month }, , { value: day }, , { value: year }, , {value: hour}, , {value: minute}] = dtf.formatToParts(date);
+    const [{ value: month }, , { value: day }, , { value: year }, , {value: hour}, , {value: minute}, ,{value:dayPeriod}] = dtf.formatToParts(date);
 
-    return day + ' ' + month + ' ' + year + ' ' + hour + ' ' + minute;
+    return day + ' ' + month + ' ' + year + ' ' + hour + ' ' + minute + ' ' + dayPeriod;
 }
 
 // Form submission handler
