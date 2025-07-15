@@ -65,3 +65,20 @@ python -m flask --app api run
 ```
 
 The application is now available at `http://localhost:5000`
+
+## Contributing
+
+Before committing any changes, please ensure your code is properly formatted and linted.
+
+Run the following tools on your code before committing:
+
+```bash
+# Format code with Black
+black .
+
+# Sort imports with isort
+isort .
+
+# Lint for potential errors and style issues
+pylint api
+```
