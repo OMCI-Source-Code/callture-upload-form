@@ -5,12 +5,22 @@
   box-sizing: border-box;
 }
 
+/* general stuff o7 */
 body {
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
   background: linear-gradient(135deg, #0A0A0A, #D9AE4C);
   min-height: 100vh;
   padding: 20px;
   line-height: 1.6;
+}
+
+::selection{
+  color: black;
+  background: #D9AE4C;
+}
+
+input:focus-within{
+  color: #D9AE4C;	
 }
 
 /* Container */
@@ -44,7 +54,6 @@ body {
 /* Form sections */
 .form-section {
   padding: 25px 30px;
-
 }
 
 .form-section h2 {
@@ -91,6 +100,36 @@ body {
   box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
+/* Time inputs */
+.time-inputs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.timeDisclaimer{
+	color: white;
+	margin-top: -2em;
+	font-size: smaller;
+	margin-bottom: 1em;
+}
+
+.input-group input[type="time"]{
+  padding: 12px;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  font-size: 1em;
+  transition: all 0.3s ease;
+  background: white;
+}
+
+.input-group input[type="time"]:focus{
+  outline: none;
+  border-color: #D9AE4C;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+  
+  
 /* Folder selection */
 .form-section:nth-child(2) .input-group {
   flex-direction: row;
@@ -218,7 +257,6 @@ body {
   margin: 0 auto;
   min-width: 200px;
 }
-
 
 .submit-btn:hover {
   transform: translateY(-2px);
