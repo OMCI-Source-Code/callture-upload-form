@@ -61,7 +61,7 @@ Then fill out the .env file. The following variables are required
 To start the Flask backend locally, run:
 
 ```bash
-python -m flask --app api/index run
+python -m flask --app api run
 ```
 
 The application is now available at `http://localhost:5000`

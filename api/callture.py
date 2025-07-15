@@ -25,7 +25,7 @@ load_dotenv()
 
 LOGIN_URL = "https://users.fibrehub.org/clnt"
 CALL_LOG_URL = "https://users.fibrehub.org/clnt/Call/Logs"
-DOWNLOAD_URL = f"https://users.fibrehub.org/FileHandler/downloadfile?TypeID=4&ClientID=${os.environ.get('CALLTURE_CLIENT_ID')}&LineNo=${os.environ.get('CALLTURE_LINE_NO')}&FileID="
+DOWNLOAD_URL = f"https://users.fibrehub.org/FileHandler/downloadfile?TypeID=4&ClientID={os.environ.get('CALLTURE_CLIENT_ID')}&LineNo="
 
 def post_login():
     headers = {}
@@ -60,7 +60,17 @@ def post_download_calls(cookies):
     return req
 
 
-def download_recording(recording_id):
-    curr_file_url = DOWNLOAD_URL + str(recording_id)
+def download_recording(line_number, recording_id):
+    print(f"Downloading Recording {recording_id}")
+    curr_file_url = DOWNLOAD_URL + str(line_number) + "&FileID=" + str(recording_id)
     req = httpx.get(curr_file_url, timeout=10.0)
+    return req
+
+
+async def a_download_recording(line_number, recording_id):
+    print(f"Downloading Recording {recording_id}")
+    curr_file_url = DOWNLOAD_URL + str(line_number) + "&FileID=" + str(recording_id)
+    async with httpx.AsyncClient() as client:
+        req = await client.get(curr_file_url, timeout=120.0)
+    print(f"Success! {recording_id}")
     return req
