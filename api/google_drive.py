@@ -58,9 +58,28 @@ def get_service():
 
 
 def upload_to_drive(
-    record_id, object_bytes, name, mimetype, description, root_id=os.environ.get("ROOT_FOLDER_ID")
+    recording, object_bytes: bytes, root_id=os.environ.get("ROOT_FOLDER_ID")
 ):
     # print(f"Uploading {record_id}")
+    recording_id = recording.CDRID
+    
+    # For some reason, when downloading from the new interface, it does not include the extension number
+    # name = "_".join(recording.Time.split()[::-1]) + "_" + str(recording.Line_No) + "_" + str(recording.Ext_No) + "_" + str(recording_id)
+    name = (
+        "_".join(recording.Time.split()[::-1])
+        + "_"
+        + str(recording.Line_No)
+        + "_"
+        + str(recording_id)
+    )
+    description = "\n".join(
+        [
+            f"{field}: {getattr(recording, field)}"
+            for field in recording._fields[1:]
+            if field not in ["Year", "Month", "Day"]
+        ]
+    )
+    mime_type="audio/mpeg"
 
     object_stream = BytesIO(object_bytes)
 
@@ -69,7 +88,7 @@ def upload_to_drive(
 
         file_metadata = {"name": name, "parents": [root_id], "description": description}
         media_stream = MediaIoBaseUpload(
-            object_stream, mimetype=mimetype, resumable=True
+            object_stream, mimetype=mime_type, resumable=True
         )
         # pylint: disable=maybe-no-member
         file = (
@@ -280,33 +299,52 @@ def upload_df_to_drive(df: pd.DataFrame, day_id_map: dict[str, dict[str, dict[st
 
     for recording in df.itertuples():
         day_folder_id = day_id_map[recording.Year][recording.Month][recording.Day]
-
-        recording_id = recording.CDRID
-
-        # For some reason, when downloading from the new interface, it does not include the extension number
-        # name = "_".join(recording.Time.split()[::-1]) + "_" + str(recording.Line_No) + "_" + str(recording.Ext_No) + "_" + str(recording_id)
-        name = (
-            "_".join(recording.Time.split()[::-1])
-            + "_"
-            + str(recording.Line_No)
-            + "_"
-            + str(recording_id)
-        )
-        description = "\n".join(
-            [
-                f"{field}: {getattr(recording, field)}"
-                for field in recording._fields[1:]
-                if field not in ["Year", "Month", "Day"]
-            ]
-        )
-
-        req = download_recording(recording.Line_No, recording_id)
-        upload_to_drive(recording_id, req.content, name, "audio/mpeg", description, day_folder_id)
+        req = download_recording(recording)
+        upload_to_drive(recording, req.content, day_folder_id)
 
 
 async def transfer_file(recording: PersonRow, day_folder_id: str, use_semaphore: bool):
-    recording_id = recording.CDRID
+    if use_semaphore:
+        async with callture_semaphore:
+            req = await a_download_recording(recording)
+        async with google_semaphore:
+            await a_upload_to_drive(
+                recording, req.content, day_folder_id
+            )
+    else:
+        req = await a_download_recording(recording)
+        await a_upload_to_drive(
+            recording, req.content, day_folder_id
+        )
 
+async def a_upload_df_to_drive(
+    df: pd.DataFrame, day_id_map: dict[str, dict[str, dict[str, str]]], use_semaphore: bool, batched: bool, batch_size: int
+):
+    print("Starting to Upload Async")
+    # async with asyncio.TaskGroup() as tg:
+    #     tasks = []
+    #     for recording in df.itertuples():
+    #         tasks.append(tg.create_task(
+    #             transfer_file(
+    #                 recording, day_id_map[recording.Year][recording.Month][recording.Day]
+    #             )
+    #         ))
+    await asyncio.gather(
+        *(
+            transfer_file(
+                recording, day_id_map[recording.Year][recording.Month][recording.Day], use_semaphore
+            )
+            for recording in df.itertuples()
+        )
+    )
+
+
+async def a_upload_to_drive(
+    recording: PersonRow, object_bytes: bytes, root_id=os.environ.get("ROOT_FOLDER_ID")
+):
+    # print(f"Uploading {record_id}")
+    recording_id = recording.CDRID
+    
     # For some reason, when downloading from the new interface, it does not include the extension number
     # name = "_".join(recording.Time.split()[::-1]) + "_" + str(recording.Line_No) + "_" + str(recording.Ext_No) + "_" + str(recording_id)
     name = (
@@ -323,48 +361,7 @@ async def transfer_file(recording: PersonRow, day_folder_id: str, use_semaphore:
             if field not in ["Year", "Month", "Day"]
         ]
     )
-
-    if use_semaphore:
-        async with callture_semaphore:
-            req = await a_download_recording(recording.Line_No, recording_id)
-        async with google_semaphore:
-            await a_upload_to_drive(
-                recording_id, req.content, name, "audio/mpeg", description, day_folder_id
-            )
-    else:
-        req = await a_download_recording(recording.Line_No, recording_id)
-        await a_upload_to_drive(
-            recording_id, req.content, name, "audio/mpeg", description, day_folder_id
-        )
-
-
-async def a_upload_df_to_drive(
-    df: pd.DataFrame, day_id_map: dict[str, dict[str, dict[str, str]]], use_semaphore: bool
-):
-    print("Starting to Upload Async")
-    # async with asyncio.TaskGroup() as tg:
-    #     tasks = []
-    #     for recording in df.itertuples():
-    #         tasks.append(tg.create_task(
-    #             transfer_file(
-    #                 recording, day_id_map[recording.Year][recording.Month][recording.Day]
-    #             )
-    #         ))
-            
-    await asyncio.gather(
-        *(
-            transfer_file(
-                recording, day_id_map[recording.Year][recording.Month][recording.Day], use_semaphore
-            )
-            for recording in df.itertuples()
-        )
-    )
-
-
-async def a_upload_to_drive(
-    record_id, object_bytes, name, mimetype, description, root_id=os.environ.get("ROOT_FOLDER_ID")
-):
-    # print(f"Uploading {record_id}")
+    mime_type="audio/mpeg"
 
     object_stream = BytesIO(object_bytes)
 
@@ -373,7 +370,7 @@ async def a_upload_to_drive(
 
         file_metadata = {"name": name, "parents": [root_id], "description": description}
         media_stream = MediaIoBaseUpload(
-            object_stream, mimetype=mimetype, resumable=True
+            object_stream, mimetype=mime_type, resumable=True
         )
         # pylint: disable=no-member
         file = (

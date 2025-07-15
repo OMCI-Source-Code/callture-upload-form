@@ -26,7 +26,7 @@ if __name__ == "__main__":
     
     # Batched async
     a_sem_start = time.perf_counter()
-    asyncio.run(batched_a_upload_df_to_drive(df, day_id_map, True))
+    asyncio.run(upload_df_to_drive(df, day_id_map, True))
     a_sem_end = time.perf_counter()
     print(f"Async Sem - It took {a_sem_end - a_sem_start} seconds to run")
     
@@ -39,6 +39,8 @@ if __name__ == "__main__":
     #     print("error")
     #     print(f"Async NoSem - It took {a_nosem_end - a_nosem_start} seconds to run")
     
+    
+    # Sync - It took 2059.8085700089996 seconds to run
     s_start = time.perf_counter()
     upload_df_to_drive(df, day_id_map)
     s_end = time.perf_counter()

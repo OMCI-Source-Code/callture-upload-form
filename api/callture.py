@@ -21,6 +21,8 @@ from datetime import datetime
 import httpx
 from dotenv import load_dotenv
 
+from pandas_utility import PersonRow
+
 load_dotenv()
 
 LOGIN_URL = "https://users.fibrehub.org/clnt"
@@ -60,14 +62,18 @@ def post_download_calls(cookies):
     return req
 
 
-def download_recording(line_number, recording_id):
+def download_recording(recording: PersonRow):
+    line_number = recording.Line_No
+    recording_id = recording.CDRID
     # print(f"Downloading Recording {recording_id}")
     curr_file_url = DOWNLOAD_URL + str(line_number) + "&FileID=" + str(recording_id)
     req = httpx.get(curr_file_url, timeout=10.0)
     return req
 
 
-async def a_download_recording(line_number, recording_id):
+async def a_download_recording(recording: PersonRow):
+    line_number = recording.Line_No
+    recording_id = recording.CDRID
     # print(f"Downloading Recording {recording_id}")
     curr_file_url = DOWNLOAD_URL + str(line_number) + "&FileID=" + str(recording_id)
     async with httpx.AsyncClient() as client:
