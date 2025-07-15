@@ -5,12 +5,22 @@
   box-sizing: border-box;
 }
 
+/* general stuff o7 */
 body {
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
   background: linear-gradient(135deg, #0A0A0A, #D9AE4C);
   min-height: 100vh;
   padding: 20px;
   line-height: 1.6;
+}
+
+::selection{
+  color: black;
+  background: #D9AE4C;
+}
+
+input:focus-within{
+  color: #D9AE4C;	
 }
 
 /* Container */
@@ -44,7 +54,6 @@ body {
 /* Form sections */
 .form-section {
   padding: 25px 30px;
-
 }
 
 .form-section h2 {
@@ -60,13 +69,6 @@ body {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 20px;
-}
-
-.timeDisclaimer{
-	color: white;
-	margin-top: -2em;
-	font-size: smaller;
-	margin-bottom: 1em;
 }
 
 .input-group {
@@ -103,6 +105,13 @@ body {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 20px;
+}
+
+.timeDisclaimer{
+	color: white;
+	margin-top: -2em;
+	font-size: smaller;
+	margin-bottom: 1em;
 }
 
 .input-group input[type="time"]{
@@ -248,7 +257,6 @@ body {
   margin: 0 auto;
   min-width: 200px;
 }
-
 
 .submit-btn:hover {
   transform: translateY(-2px);
