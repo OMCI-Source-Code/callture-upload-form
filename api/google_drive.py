@@ -24,7 +24,6 @@ from datetime import datetime, timedelta
 from io import BytesIO
 
 import pandas as pd
-from dotenv import load_dotenv
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
@@ -34,7 +33,6 @@ from api.callture import download_recording, a_download_recording
 # from api.callture import a_download_recording
 from api.pandas_utility import PersonRow
 
-load_dotenv()
 
 callture_semaphore = asyncio.Semaphore(100)
 google_semaphore = asyncio.Semaphore(100)
@@ -56,9 +54,9 @@ def get_service():
 
 
 def upload_to_drive(
-    recording, object_bytes: bytes, root_id=os.environ.get("ROOT_FOLDER_ID"), async_enabled: bool
+    recording, object_bytes: bytes, root_id=os.environ.get("ROOT_FOLDER_ID")
 ):
-    # print(f"Uploading {record_id}")
+    print(f"Uploading {recording.CDRID}")
     recording_id = recording.CDRID
     
     # For some reason, when downloading from the new interface, it does not include the extension number
@@ -236,7 +234,7 @@ def setup_date_folders(
         lambda: defaultdict(dict)
     )
 
-    date_format = '%d %b %Y %I:%M %p'
+    date_format = '%d %b %Y'
 
     dt_start_date = datetime.strptime(start_date, date_format)
     dt_end_date = datetime.strptime(end_date, date_format)
@@ -293,10 +291,10 @@ def setup_date_folders(
 
 
 def upload_df_to_drive(df: pd.DataFrame, day_id_map: dict[str, dict[str, dict[str, str]]], async_enabled: bool = False, use_semaphore: bool = False, batched: bool = False, batch_size: int = 0):
-    if not async_enabled:
-        _upload_df_sync(df, day_id_map)
+    if async_enabled:
+        asyncio.run(_upload_df_async(df, day_id_map, use_semaphore))
     else:
-        asyncio.run(_upload_df_async(use_semaphore, batched, batch_size))
+        _upload_df_sync(df, day_id_map)
         
 def _upload_df_sync(df, day_id_map):
     print("Starting to Upload Sync")

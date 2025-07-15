@@ -2,11 +2,13 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS
 
 from api.callture import post_download_calls, post_get_calls, post_login
-from api.google_drive import setup_date_folders
+from api.google_drive import setup_date_folders, upload_df_to_drive
 from api.pandas_utility import parse_req_to_df, process_df
+from dotenv import load_dotenv
 
 app = Flask(__name__)
 CORS(app)
+load_dotenv()
 
 
 @app.route("/login", methods=["POST"])
@@ -35,8 +37,9 @@ def upload():
     df = process_df(df)
 
     try:
-        date_folders = setup_date_folders(date_range)
-        print(date_folders)
+        day_id_map = setup_date_folders(date_range)
+        folder_id = upload_df_to_drive(df, day_id_map)
+        print(f"uploaded {folder_id}")
 
     except Exception as e:
         print(e)
