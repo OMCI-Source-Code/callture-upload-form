@@ -75,6 +75,10 @@ async def a_download_recording(recording: PersonRow):
     line_number = recording.Line_No
     recording_id = recording.CDRID
     curr_file_url = DOWNLOAD_URL + str(line_number) + "&FileID=" + str(recording_id)
-    async with httpx.AsyncClient() as client:
-        req = await client.get(curr_file_url, timeout=600.0)
+    try:
+        async with httpx.AsyncClient() as client:
+            req = await client.get(curr_file_url, timeout=100.0)
+    except Exception as e:
+        print(f"ERRORED FOR ID {recording_id}, which is URL {curr_file_url}")
+        print(f"Exception is {e}")
     return req
