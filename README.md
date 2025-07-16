@@ -49,12 +49,15 @@ cp .env.example .env
 
 Then fill out the .env file. The following variables are required
 
-| **Variable**   | **Description**                                                    |
-| -------------- | ------------------------------------------------------------------ |
-| USERNAME       | Your callture username you use to log in                           |
-| PASSWORD       | Your callture password you use to log in                           |
-| ROOT_FOLDER_ID | The ID for the root folder your are uploading to in Google Drive   |
-| DRIVE_ID       | The ID for the shared folder your are uploading to in Google Drive |
+| **Variable**            | **Description**                                                                            |
+| ----------------------- | ------------------------------------------------------------------------------------------ |
+| USERNAME                | Your callture username you use to log in                                                   |
+| PASSWORD                | Your callture password you use to log in                                                   |
+| CALLTURE_CLIENT_ID      | Your Callture client ID                                                                    |
+| ROOT_FOLDER_ID          | The ID for the root folder your are uploading to in Google Drive                           |
+| DRIVE_ID                | The ID for the shared folder your are uploading to in Google Drive                         |
+| CALLTURE_DOWNLOAD_LIMIT | The maximum amount of files that can be downloaded from Callture at a time. Defaults to 30 |
+| GOOGLE_UPLOAD_LIMIT     | The maximum amount of files that can be uploaded to Google at a time. Defaults to 100.     |
 
 ### 5. Run the Backend
 

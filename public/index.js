@@ -48,13 +48,14 @@ document
         const formData = new FormData(this);
 
         const fromDate = formData.get("fromDate");
-        const fromTime = formData.get("fromTime");
+        // const fromTime = formData.get("fromTime");
+        const fromTime = "00:00"
         const toDate = formData.get("toDate");
-        const toTime = formData.get("toTime");
+        const toTime = "23:59"
+        // const toTime = formData.get("toTime");
         const selectedNumbers = [];
 
         const dateRange = formatDate(fromDate, fromTime) + ' - ' + formatDate(toDate, toTime);
-        console.log(dateRange)
         // Get all checked contacts
         const checkboxes = document.querySelectorAll(
             'input[name="contacts"]:checked'
@@ -66,18 +67,28 @@ document
             lineNo: selectedNumbers,
         }
 
-        const response = await fetch('http://localhost:5000/upload', {
-            method: 'POST',
-            body: JSON.stringify(reqBody), // string or object
-            headers: {
-                'Content-Type': 'application/json'
+        try {
+            document.getElementById("loader").style.display = "flex";
+
+            const response = await fetch('http://localhost:5000/upload', {
+                method: 'POST',
+                body: JSON.stringify(reqBody), // string or object
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (!response.ok) {
+                const data = await response.json()
+                throw new Error(`${response.status}: ${data.message}`)
             }
-        });
-        if (response.status != 200) {
-            console.log(response)
-            alert(`Error ${response.status}!\n${response.statusText}`);
-        } else {
+
             alert(`Successfully uploaded to drive!`);
+        } catch (exception) {
+            console.error(exception);
+            alert(`Error: ${exception.message || exception}`);
+        } finally {
+            document.getElementById("loader").style.display = "none";
         }
 
     });
