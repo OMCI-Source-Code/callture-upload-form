@@ -48,9 +48,11 @@ document
         const formData = new FormData(this);
 
         const fromDate = formData.get("fromDate");
-        const fromTime = formData.get("fromTime");
+        // const fromTime = formData.get("fromTime");
+        const fromTime = "00:00"
         const toDate = formData.get("toDate");
-        const toTime = formData.get("toTime");
+        const toTime = "23:59"
+        // const toTime = formData.get("toTime");
         const selectedNumbers = [];
 
         const dateRange = formatDate(fromDate, fromTime) + ' - ' + formatDate(toDate, toTime);
@@ -77,7 +79,8 @@ document
             });
 
             if (!response.ok) {
-                throw new Error(`Error ${response.status}: ${response.statusText}`)
+                const data = await response.json()
+                throw new Error(`${response.status}: ${data.message}`)
             }
 
             alert(`Successfully uploaded to drive!`);

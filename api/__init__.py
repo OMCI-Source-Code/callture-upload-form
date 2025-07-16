@@ -6,6 +6,8 @@ from api.callture import post_download_calls, post_get_calls, post_login
 from api.google_drive import setup_date_folders, upload_df_to_drive
 from api.pandas_utility import parse_req_to_df, process_df
 
+from api.errors import TransferException
+
 app = Flask(__name__)
 CORS(app)
 load_dotenv()
@@ -45,7 +47,9 @@ def upload():
 
         print(f"Uploading finished")
 
-    except Exception as e:
+    except TransferException as e:
         print(e)
-        return ({"error": str(e)}, 401)
+        return ({"message": str(e)}, 500)
+    except Exception as e:
+        return ({"message": str(e)}, 500)
     return (jsonify({"message": "Successfully uploaded"}), 200)
