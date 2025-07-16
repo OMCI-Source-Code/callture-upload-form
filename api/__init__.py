@@ -42,7 +42,7 @@ def upload():
 
         # Sync
         # upload_df_to_drive(df, day_id_map)
-        
+
         print(f"Uploading finished")
 
     except Exception as e:
