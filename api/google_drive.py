@@ -384,7 +384,6 @@ async def _upload_df_async(
             transfer_file(
                 recording,
                 day_id_map[recording.Year][recording.Month][recording.Day],
-                use_semaphore,
             )
             for recording in df.itertuples()
         ),
