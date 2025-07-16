@@ -51,7 +51,7 @@ if __name__ == "__main__":
     
     
     a_nosem_start = time.perf_counter()
-    upload_df_to_drive(df, day_id_map, True, True)
+    upload_df_to_drive(df, day_id_map, True)
     a_nosem_end = time.perf_counter()
     print(f"Async NoSem - It took {a_nosem_end - a_nosem_start} seconds to run")
     

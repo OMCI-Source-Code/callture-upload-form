@@ -38,7 +38,7 @@ def upload():
 
     try:
         day_id_map = setup_date_folders(date_range)
-        upload_df_to_drive(df, day_id_map, True, True)
+        upload_df_to_drive(df, day_id_map, True)
 
         # Sync
         # upload_df_to_drive(df, day_id_map)

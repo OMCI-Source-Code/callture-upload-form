@@ -38,8 +38,8 @@ from aiogoogle import Aiogoogle
 from aiogoogle.auth.creds import ServiceAccountCreds
 
 
-callture_semaphore = asyncio.Semaphore(30)
-google_semaphore = asyncio.Semaphore(100)
+callture_semaphore = asyncio.Semaphore(int(os.environ.get("CALLTURE_DOWNLOAD_LIMIT", 30)))
+google_semaphore = asyncio.Semaphore(int(os.environ.get("GOOGLE_UPLOAD_LIMIT", 100)))
 
 service_account_file = "service_account.json"
 scopes = [
@@ -345,10 +345,9 @@ def upload_df_to_drive(
     df: pd.DataFrame,
     day_id_map: dict[str, dict[str, dict[str, str]]],
     async_enabled: bool = False,
-    use_semaphore: bool = False,
 ):
     if async_enabled:
-        asyncio.run(_upload_df_async(df, day_id_map, use_semaphore))
+        asyncio.run(_upload_df_async(df, day_id_map))
     else:
         _upload_df_sync(df, day_id_map)
 
@@ -391,15 +390,11 @@ async def _upload_df_async(
         print(f"The following errors occurred: {errors}")
 
 
-async def transfer_file(recording: PersonRow, day_folder_id: str, use_semaphore: bool):
+async def transfer_file(recording: PersonRow, day_folder_id: str):
     try:
-        if use_semaphore:
-            async with callture_semaphore:
-                req = await a_download_recording(recording)
-            async with google_semaphore:
-                await a_upload_to_drive(recording, req.content, day_folder_id)
-        else:
+        async with callture_semaphore:
             req = await a_download_recording(recording)
+        async with google_semaphore:
             await a_upload_to_drive(recording, req.content, day_folder_id)
     except Exception as e:
         raise Exception(f"Error in recording with ID {recording.CDRID}") from e
