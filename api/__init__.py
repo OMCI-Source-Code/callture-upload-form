@@ -38,7 +38,11 @@ def upload():
 
     try:
         day_id_map = setup_date_folders(date_range)
-        upload_df_to_drive(df, day_id_map)
+        upload_df_to_drive(df, day_id_map, True, True)
+
+        # Sync
+        # upload_df_to_drive(df, day_id_map)
+        
         print(f"Uploading finished")
 
     except Exception as e:
