@@ -32,15 +32,13 @@ from google.oauth2 import service_account
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from googleapiclient.http import MediaIoBaseUpload
+import traceback
+
+from api.errors import TransferException
 
 from api.callture import a_download_recording, download_recording
 # from api.callture import a_download_recording
 from api.pandas_utility import PersonRow
-
-callture_semaphore = asyncio.Semaphore(
-    int(os.environ.get("CALLTURE_DOWNLOAD_LIMIT", 30))
-)
-google_semaphore = asyncio.Semaphore(int(os.environ.get("GOOGLE_UPLOAD_LIMIT", 100)))
 
 service_account_file = "service_account.json"
 scopes = [
@@ -370,35 +368,36 @@ async def _upload_df_async(
     day_id_map: dict[str, dict[str, dict[str, str]]],
     use_semaphore: bool = False,
 ):
+    callture_semaphore = asyncio.Semaphore(
+        int(os.environ.get("CALLTURE_DOWNLOAD_LIMIT", 30))
+    )
+    google_semaphore = asyncio.Semaphore(int(os.environ.get("GOOGLE_UPLOAD_LIMIT", 100)))
+
     print("Starting to Upload Async")
-    # async with asyncio.TaskGroup() as tg:
-    #     tasks = []
-    #     for recording in df.itertuples():
-    #         tasks.append(tg.create_task(
-    #             transfer_file(
-    #                 recording, day_id_map[recording.Year][recording.Month][recording.Day]
-    #             )
-    #         ))
-    task_states = await asyncio.gather(
+    
+    task_states: list[TransferException | None] = await asyncio.gather(
         *(
             transfer_file(
                 recording,
                 day_id_map[recording.Year][recording.Month][recording.Day],
+                callture_semaphore,
+                google_semaphore
             )
             for recording in df.itertuples()
         ),
         return_exceptions=True,
     )
-    errors = [e for e in task_states if e]
+    errors: list[TransferException] = [e for e in task_states if e]
     if errors:
-        print(f"The following errors occurred: {errors}")
-
-
-async def transfer_file(recording: PersonRow, day_folder_id: str):
+        print("The following errors occured")
+        for e in errors:
+            print(e)
+        raise TransferException(f"File Transfer Error: file(s) with id's: {[e.recording_id for e in errors]} could not be transferred. Please refer to logs for more details")
+async def transfer_file(recording: PersonRow, day_folder_id: str, callture_semaphore: asyncio.Semaphore, google_semaphore: asyncio.Semaphore):
     try:
         async with callture_semaphore:
             req = await a_download_recording(recording)
         async with google_semaphore:
             await a_upload_to_drive(recording, req.content, day_folder_id)
     except Exception as e:
-        raise Exception(f"Error in recording with ID {recording.CDRID}") from e
+        raise TransferException(traceback.format_exc(), recording.CDRID) from e
