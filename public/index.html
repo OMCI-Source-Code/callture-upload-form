@@ -7,12 +7,15 @@
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
+    <div id="loader">
+      <div id="loading"></div>
+    </div>
     <div class="form-container">
       <h1>Callture Upload Form</h1>
       <hr class="divider" />
 
       <form id="dataForm">
-	  <!-- maybe we want to rewrite the date and time inputs into datetime-local
+        <!-- maybe we want to rewrite the date and time inputs into datetime-local
 	  with that in mind, our current method seems to work - so might not be worth it-->
         <!-- Date Range Section -->
         <div class="form-section">
@@ -29,26 +32,25 @@
           </div>
         </div>
 
-        <hr class="divider"/>
-		
-		<!-- Time Range Section-->
-		<div class="form-section">
-		
-		  <h2>Time Range</h2>
-		  <p class="timeDisclaimer"> By default, 24 hour range applied </p>
-		  <div class="time-inputs">
-		    <div class="input-group">
-		    <label for="fromTime">From:</label>
-			<input type="time" id="fromTime" name="fromTime" value="00:00"/>
-		  </div>
-		  <div class="input-group">
-		    <label for="toTime">To:</label>
-		    <input type="time" id="toTime" name="toTime" value="23:59"/>
-		    </div>
-		  </div>
-		</div>
-		
-		<hr class="divider"/>
+        <hr class="divider" />
+
+        <!-- Time Range Section-->
+        <div class="form-section">
+          <h2>Time Range</h2>
+          <p class="timeDisclaimer">By default, 24 hour range applied</p>
+          <div class="time-inputs">
+            <div class="input-group">
+              <label for="fromTime">From:</label>
+              <input type="time" id="fromTime" name="fromTime" value="00:00" />
+            </div>
+            <div class="input-group">
+              <label for="toTime">To:</label>
+              <input type="time" id="toTime" name="toTime" value="23:59" />
+            </div>
+          </div>
+        </div>
+
+        <hr class="divider" />
         <!-- Checkboxes Section -->
         <div class="form-section">
           <h2>Line Numbers</h2>
@@ -146,7 +148,6 @@
         </div>
 
         <hr class="divider" />
-
         <!-- Submit Section -->
         <div class="form-section">
           <button

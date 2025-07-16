@@ -8,36 +8,36 @@
 /* general stuff o7 */
 body {
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-  background: linear-gradient(135deg, #0A0A0A, #D9AE4C);
+  background: linear-gradient(135deg, #0a0a0a, #d9ae4c);
   min-height: 100vh;
   padding: 20px;
   line-height: 1.6;
 }
 
-::selection{
+::selection {
   color: black;
-  background: #D9AE4C;
+  background: #d9ae4c;
 }
 
-input:focus-within{
-  color: #D9AE4C;	
+input:focus-within {
+  color: #d9ae4c;
 }
 
 /* Container */
 .form-container {
   max-width: 800px;
   margin: 0 auto;
-  background: #0A0A0A;
+  background: #0a0a0a;
   border-radius: 1.25rem;
-  border: 2px solid #D9AE4C;
+  border: 2px solid #d9ae4c;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
   overflow: hidden;
 }
 
 /* Header */
 .form-container h1 {
-  background: #0A0A0A;
-  color: #D9AE4C;
+  background: #0a0a0a;
+  color: #d9ae4c;
   padding: 30px 30px 2px 30px;
   text-align: center;
   font-size: 1.7rem;
@@ -48,7 +48,7 @@ input:focus-within{
 .divider {
   width: 75%;
   margin: 10px auto;
-  color: #D9AE4C;
+  color: #d9ae4c;
 }
 
 /* Form sections */
@@ -57,7 +57,7 @@ input:focus-within{
 }
 
 .form-section h2 {
-  color: #D9AE4C;
+  color: #d9ae4c;
   margin-bottom: 20px;
   font-size: 1.4em;
   font-weight: 500;
@@ -96,7 +96,7 @@ input:focus-within{
 .input-group input[type="date"]:focus,
 .input-group input[type="text"]:focus {
   outline: none;
-  border-color: #D9AE4C;
+  border-color: #d9ae4c;
   box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
@@ -107,14 +107,14 @@ input:focus-within{
   gap: 20px;
 }
 
-.timeDisclaimer{
-	color: white;
-	margin-top: -2em;
-	font-size: smaller;
-	margin-bottom: 1em;
+.timeDisclaimer {
+  color: white;
+  margin-top: -2em;
+  font-size: smaller;
+  margin-bottom: 1em;
 }
 
-.input-group input[type="time"]{
+.input-group input[type="time"] {
   padding: 12px;
   border: 2px solid #ddd;
   border-radius: 8px;
@@ -123,13 +123,12 @@ input:focus-within{
   background: white;
 }
 
-.input-group input[type="time"]:focus{
+.input-group input[type="time"]:focus {
   outline: none;
-  border-color: #D9AE4C;
+  border-color: #d9ae4c;
   box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
-  
-  
+
 /* Folder selection */
 .form-section:nth-child(2) .input-group {
   flex-direction: row;
@@ -183,7 +182,7 @@ input:focus-within{
   align-items: center;
   gap: 12px;
   padding: 12px;
-  border: 2px solid #D9AE4C;
+  border: 2px solid #d9ae4c;
   border-radius: 8px;
   transition: all 0.3s ease;
   background: #f8f9fa;
@@ -200,13 +199,13 @@ input:focus-within{
   width: 18px;
   height: 18px;
   cursor: pointer;
-  accent-color: #D9AE4C;
+  accent-color: #d9ae4c;
 }
 
 .checkbox-item label {
   cursor: pointer;
   font-size: 0.95em;
-  color: #0A0A0A;
+  color: #0a0a0a;
   flex: 1;
 }
 
@@ -236,7 +235,7 @@ input:focus-within{
 }
 
 .control-btn:hover {
-  background: #D9AE4C;
+  background: #d9ae4c;
   border-color: #555555;
   transform: translateY(-1px);
   color: #ffffff;
@@ -246,7 +245,7 @@ input:focus-within{
 .submit-btn {
   background: #ffffff;
   color: #555555;
-  border: solid #D9AE4C;
+  border: solid #d9ae4c;
   padding: 15px 40px;
   border-radius: 8px;
   cursor: pointer;
@@ -261,7 +260,7 @@ input:focus-within{
 .submit-btn:hover {
   transform: translateY(-2px);
   box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
-  background: #D9AE4C;
+  background: #d9ae4c;
   color: #ffffff;
   border-color: #555555;
 }
@@ -335,5 +334,39 @@ input:focus-within{
   .submit-btn {
     width: 100%;
     min-width: auto;
+  }
+}
+
+#loader {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.3); /* Slightly darkens background */
+  backdrop-filter: blur(8px);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  pointer-events: auto;
+}
+
+#loading {
+  border: 4px solid #ccc;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  border-top-color: #1ecd97;
+  border-left-color: #1ecd97;
+  animation: spin 1s infinite ease-in;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
   }
 }

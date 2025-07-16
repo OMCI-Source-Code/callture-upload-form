@@ -18,6 +18,7 @@ Date: 2025-07-14
 """
 
 import asyncio
+import json
 import os
 import warnings
 from collections import defaultdict
@@ -25,6 +26,8 @@ from datetime import datetime, timedelta
 from io import BytesIO
 
 import pandas as pd
+from aiogoogle import Aiogoogle
+from aiogoogle.auth.creds import ServiceAccountCreds
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
@@ -33,13 +36,11 @@ from googleapiclient.http import MediaIoBaseUpload
 from api.callture import a_download_recording, download_recording
 # from api.callture import a_download_recording
 from api.pandas_utility import PersonRow
-import json
-from aiogoogle import Aiogoogle
-from aiogoogle.auth.creds import ServiceAccountCreds
 
-
-callture_semaphore = asyncio.Semaphore(30)
-google_semaphore = asyncio.Semaphore(100)
+callture_semaphore = asyncio.Semaphore(
+    int(os.environ.get("CALLTURE_DOWNLOAD_LIMIT", 30))
+)
+google_semaphore = asyncio.Semaphore(int(os.environ.get("GOOGLE_UPLOAD_LIMIT", 100)))
 
 service_account_file = "service_account.json"
 scopes = [
@@ -49,10 +50,8 @@ scopes = [
 
 service_account_key = json.load(open(service_account_file))
 
-creds = ServiceAccountCreds(
-    scopes=scopes,
-    **service_account_key
-)
+creds = ServiceAccountCreds(scopes=scopes, **service_account_key)
+
 
 def get_service():
     credentials = service_account.Credentials.from_service_account_file(
@@ -143,7 +142,12 @@ async def a_upload_to_drive(
     try:
         async with Aiogoogle(service_account_creds=creds) as aiogoogle:
             service = await aiogoogle.discover("drive", "v3")
-            file_metadata = {"name": name, "parents": [root_id], "description": description, "mimeType": mime_type}
+            file_metadata = {
+                "name": name,
+                "parents": [root_id],
+                "description": description,
+                "mimeType": mime_type,
+            }
             await aiogoogle.as_service_account(
                 service.files.create(
                     json=file_metadata,
@@ -155,6 +159,7 @@ async def a_upload_to_drive(
 
     except HttpError as error:
         print(f"An error occurred: {error}")
+
 
 def get_drive_folder(name=None, root_id=os.environ.get("ROOT_FOLDER_ID")):
     """
@@ -345,10 +350,9 @@ def upload_df_to_drive(
     df: pd.DataFrame,
     day_id_map: dict[str, dict[str, dict[str, str]]],
     async_enabled: bool = False,
-    use_semaphore: bool = False,
 ):
     if async_enabled:
-        asyncio.run(_upload_df_async(df, day_id_map, use_semaphore))
+        asyncio.run(_upload_df_async(df, day_id_map))
     else:
         _upload_df_sync(df, day_id_map)
 
@@ -380,26 +384,21 @@ async def _upload_df_async(
             transfer_file(
                 recording,
                 day_id_map[recording.Year][recording.Month][recording.Day],
-                use_semaphore,
             )
             for recording in df.itertuples()
         ),
-        return_exceptions=True
+        return_exceptions=True,
     )
     errors = [e for e in task_states if e]
     if errors:
         print(f"The following errors occurred: {errors}")
 
 
-async def transfer_file(recording: PersonRow, day_folder_id: str, use_semaphore: bool):
+async def transfer_file(recording: PersonRow, day_folder_id: str):
     try:
-        if use_semaphore:
-            async with callture_semaphore:
-                req = await a_download_recording(recording)
-            async with google_semaphore:
-                await a_upload_to_drive(recording, req.content, day_folder_id)
-        else:
+        async with callture_semaphore:
             req = await a_download_recording(recording)
+        async with google_semaphore:
             await a_upload_to_drive(recording, req.content, day_folder_id)
     except Exception as e:
         raise Exception(f"Error in recording with ID {recording.CDRID}") from e

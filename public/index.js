@@ -54,7 +54,6 @@ document
         const selectedNumbers = [];
 
         const dateRange = formatDate(fromDate, fromTime) + ' - ' + formatDate(toDate, toTime);
-        console.log(dateRange)
         // Get all checked contacts
         const checkboxes = document.querySelectorAll(
             'input[name="contacts"]:checked'
@@ -66,18 +65,27 @@ document
             lineNo: selectedNumbers,
         }
 
-        const response = await fetch('http://localhost:5000/upload', {
-            method: 'POST',
-            body: JSON.stringify(reqBody), // string or object
-            headers: {
-                'Content-Type': 'application/json'
+        try {
+            document.getElementById("loader").style.display = "flex";
+
+            const response = await fetch('http://localhost:5000/upload', {
+                method: 'POST',
+                body: JSON.stringify(reqBody), // string or object
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error(`Error ${response.status}: ${response.statusText}`)
             }
-        });
-        if (response.status != 200) {
-            console.log(response)
-            alert(`Error ${response.status}!\n${response.statusText}`);
-        } else {
+
             alert(`Successfully uploaded to drive!`);
+        } catch (exception) {
+            console.error(exception);
+            alert(`Error: ${exception.message || exception}`);
+        } finally {
+            document.getElementById("loader").style.display = "none";
         }
 
     });
