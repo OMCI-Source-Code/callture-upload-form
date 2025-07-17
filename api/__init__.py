@@ -35,10 +35,22 @@ def create_app():
         if req.status_code != 302:
             print("Prematurely exiting")
             return (req.json(), req.status_code)
+        
         req = post_get_calls(cookies, line_no, ext_no, date_range)
+        if req.status_code != 200: 
+            print("Prematurely exiting get calls")
+            return (jsonify({"error" : "Cannot retrieve call logs from Callture, " + json_error_check(req)}), req.status_code)
+        
         req = post_download_calls(cookies)
+        if req.status_code != 200: 
+            print("Prematurely exiting download calls")
+            return (jsonify({"error" : "Cannot download call logs from Callture, " + json_error_check(req)}), req.status_code)
 
         df = parse_req_to_df(req)
+        if df is None:
+            print("CAnnot parse to Excel")
+            return jsonify({"error" : "Failed to parse call log file to Excel"})
+        
         df = process_df(df)
 
         try:

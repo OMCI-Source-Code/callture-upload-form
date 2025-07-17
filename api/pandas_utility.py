@@ -41,10 +41,18 @@ class PersonRow(NamedTuple):
 
 
 def parse_req_to_df(req: Response):
-    file = BytesIO(req.content)
-    df = pd.read_excel(file, skiprows=8)
-
-    return df
+    try:
+        file = BytesIO(req.content)
+        df = pd.read_excel(file, skiprows=8)
+        return df
+    except Exception as err:
+        print("ERROR THROWN:", err)
+        try:
+            error = req.json()
+        except Exception:
+            error = "Invalid JSON response"
+        print ("Details:", error)
+        return None
 
 
 def process_df(df: pd.DataFrame):

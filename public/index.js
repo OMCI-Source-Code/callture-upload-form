@@ -45,6 +45,7 @@ document
     .getElementById("dataForm")
     .addEventListener("submit", async function (e) {
         e.preventDefault();
+        const modal_popup = document.getElementById("modal_popup");
         const formData = new FormData(this);
 
         const fromDate = formData.get("fromDate");
@@ -66,6 +67,8 @@ document
             dateRange: dateRange,
             lineNo: selectedNumbers,
         }
+        modal_popup.textContent = "Uploading...";
+        modal_popup.classList.add('show');
 
         try {
             document.getElementById("loader").style.display = "flex";
@@ -80,15 +83,31 @@ document
 
             if (!response.ok) {
                 const data = await response.json()
+                console.log(response);
+                modal_popup.textContent = "Upload failed!"
+                setTimeout(() => { modal_popup.classList.remove('show'); }, "1500");
+                setTimeout(() => { modal_popup.textContent = `Error ${response.status}: ${data.error}`; modal_popup.classList.add('show'); }, "2000");
+                setTimeout(() => { modal_popup.classList.remove('show'); }, "10000");
                 throw new Error(`${response.status}: ${data.message}`)
             }
 
-            alert(`Successfully uploaded to drive!`);
+            modal_popup.classList.remove('show');
+            setTimeout(() => { modal_popup.textContent = "Upload completed successfully!"; modal_popup.classList.add('show'); }, "500");
+            setTimeout(() => { modal_popup.classList.remove('show'); }, "7000");
         } catch (exception) {
             console.error(exception);
-            alert(`Error: ${exception.message || exception}`);
+            modal_popup.textContent = "Upload failed!"
+            setTimeout(() => { modal_popup.classList.remove('show'); }, "1500");
+            setTimeout(() => { modal_popup.textContent = `Error: ${exception}`; modal_popup.classList.add('show'); }, "2000");
+            setTimeout(() => { modal_popup.classList.remove('show'); }, "10000");
+            if (confirm(`Error: ${exception.message || exception} Would you like to try again?`)) {
+                var restart_pending = true;
+            }
+
         } finally {
             document.getElementById("loader").style.display = "none";
         }
+
+        if (restart_pending) { document.getElementById("submit-btn").click(); restart_pending = false; } //restart process by clicking submit btn for user
 
     });
