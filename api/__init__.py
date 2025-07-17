@@ -30,58 +30,60 @@ def create_app():
             except Exception:
 
                 return 'Something went wrong while fetching the data'
+        def process_info(line_no):
+            try:
+                req = post_get_calls(cookies, line_no, ext_no, date_range)
+                if req.status_code != 200:
+                    raise GetCallException("Cannot retrieve call logs from Callture, " + json_error_check(req), req)
+                if "No Call Logs" in req.content.decode('utf-8', errors='ignore'):
+                    print("No Call Logs, returning")
+                    return
+                req = post_download_calls(cookies)
+                if req.status_code != 200:
+                    raise DownloadCallException("Cannot download call logs from Callture, " + json_error_check(req), req)
 
+                df = parse_req_to_df(req)
+                if df is None:
+                    raise ParseException("Failed to parse call log file to Excel")
+            except GetCallException as e:
+                print("Prematurely Exiting")
+                return (jsonify({"error": str(e)}), e.response.status_code)
+            except DownloadCallException as e:
+                print("Prematurely Exiting")
+                return (jsonify({"error": str(e)}), e.response.status_code)
+            except ParseException as e:
+                print("Prematurely Exiting")
+                return (jsonify({"error": str(e)}), e.response.status_code)
+
+            df = process_df(df)
+
+            try:
+                day_id_map = setup_date_folders(date_range)
+                upload_df_to_drive(df, day_id_map)
+                print(f"Uploading finished")
+
+            except TransferException as e:
+                print(e)
+                return ({"message": str(e)}, 500)
+            except Exception as e:
+                return ({"message": str(e)}, 500)
+            return (jsonify({"message": "Successfully uploaded"}), 200)
+        
         data = request.get_json()
         line_no = data.get("lineNo")
         ext_no = "All"
         date_range = data.get("dateRange")
-        if len(line_no) == 8:
-            line_no = "All"
 
         try:
             req = post_login()
             if req.status_code != 302:
                 raise LoginFailedException("Login failed!", req)
-
             cookies = req.cookies
-            req = post_get_calls(cookies, line_no, ext_no, date_range)
-            if req.status_code != 200:
-                raise GetCallException("Cannot retrieve call logs from Callture, " + json_error_check(req), req)
-
-            req = post_download_calls(cookies)
-            if req.status_code != 200:
-                raise DownloadCallException("Cannot download call logs from Callture, " + json_error_check(req), req)
-
-            df = parse_req_to_df(req)
-            if df is None:
-                raise ParseException("Failed to parse call log file to Excel")
-
         except LoginFailedException as e:
             return (e.response.json(), e.response.status_code)
-        except GetCallException as e:
-            print("Prematurely Exiting")
-            return (jsonify({"error": str(e)}), e.response.status_code)
-        except DownloadCallException as e:
-            print("Prematurely Exiting")
-            return (jsonify({"error": str(e)}), e.response.status_code)
-        except ParseException as e:
-            print("Prematurely Exiting")
-            return (jsonify({"error": str(e)}), e.response.status_code)
-
         
-
-        df = process_df(df)
-
-        try:
-            day_id_map = setup_date_folders(date_range)
-            upload_df_to_drive(df, day_id_map)
-            print(f"Uploading finished")
-
-        except TransferException as e:
-            print(e)
-            return ({"message": str(e)}, 500)
-        except Exception as e:
-            return ({"message": str(e)}, 500)
-        return (jsonify({"message": "Successfully uploaded"}), 200)
-
+        for line in line_no:
+            print(f"Processing line.no {line}")
+            processResponse = process_info(line)
+        return processResponse
     return app
