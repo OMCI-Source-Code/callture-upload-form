@@ -46,6 +46,8 @@ document
     .addEventListener("submit", async function (e) {
         e.preventDefault();
         const modal_popup = document.getElementById("modal_popup");
+        const submit_btn = document.getElementById("submit-btn");
+        submit_btn.classList.add('hide');
         const formData = new FormData(this);
 
         const fromDateStr = formData.get("fromDate");

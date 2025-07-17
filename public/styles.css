@@ -268,6 +268,9 @@ input:focus-within {
 .submit-btn:active {
   transform: translateY(0);
 }
+.submit-btn.hide {
+  pointer-events: none;
+}
 
 
 /* Modal container */
@@ -370,6 +373,7 @@ input:focus-within {
   border-top-color: #d9ae4c;
   border-left-color: #d9ae4c;
   animation: spin 1s infinite ease-in;
+  pointer-events: none;
 }
 
 @keyframes spin {
@@ -406,4 +410,4 @@ input:focus-within {
   }
 }
 
-}
+
