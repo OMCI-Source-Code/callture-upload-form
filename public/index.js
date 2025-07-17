@@ -46,6 +46,8 @@ document
     .addEventListener("submit", async function (e) {
         e.preventDefault();
         const modal_popup = document.getElementById("modal_popup");
+        const submit_btn = document.getElementById("submit-btn");
+        
         const formData = new FormData(this);
 
         const fromDateStr = formData.get("fromDate");
@@ -76,6 +78,7 @@ document
 
         try {
             document.getElementById("loader").style.display = "flex";
+            submit_btn.classList.add('hide');
 
             const response = await fetch('http://localhost:5000/upload', {
                 method: 'POST',
@@ -111,6 +114,7 @@ document
           
         } finally {
             document.getElementById("loader").style.display = "none";
+            submit_btn.classList.remove('hide');
         }
 		
 
