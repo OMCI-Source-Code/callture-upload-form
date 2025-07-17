@@ -47,10 +47,14 @@ document
         e.preventDefault();
         const formData = new FormData(this);
 
-        const fromDate = formData.get("fromDate");
+        const fromDateStr = formData.get("fromDate");
+        const [fromYear,fromMonth,fromDay] = fromDateStr.split("-").map(Number);
+        const fromDate = new Date(fromYear,fromMonth-1,fromDay)
         // const fromTime = formData.get("fromTime");
         const fromTime = "00:00"
-        const toDate = formData.get("toDate");
+        const toDateStr = formData.get("toDate");
+        const [toYear,toMonth,toDay] = toDateStr.split("-").map(Number);
+        const toDate = new Date(toYear,toMonth-1,toDay)
         const toTime = "23:59"
         // const toTime = formData.get("toTime");
         const selectedNumbers = [];
