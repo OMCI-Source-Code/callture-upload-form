@@ -110,7 +110,7 @@ document
                     if(restart_pending){document.getElementById("submit-btn").click(); restart_pending = false;}
                 };
             }, "2350");
-            modal_popup.classList.remove('show');
+            setTimeout(() => { modal_popup.classList.remove('show'); }, "6500");
           
         } finally {
             document.getElementById("loader").style.display = "none";

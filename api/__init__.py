@@ -6,6 +6,7 @@ from api.callture import post_download_calls, post_get_calls, post_login
 from api.errors import TransferException
 from api.google_drive import setup_date_folders, upload_df_to_drive
 from api.pandas_utility import parse_req_to_df, process_df
+from api.errors import (TransferException, DownloadCallException, GetCallException, LoginFailedException, ParseException)
 
 
 def create_app():
@@ -27,7 +28,8 @@ def create_app():
             try:
                 return req.json()
             except Exception:
-                return "Invalid JSON response"
+
+                return 'Something went wrong while fetching the data'
 
         data = request.get_json()
         line_no = data.get("lineNo")
@@ -36,42 +38,37 @@ def create_app():
         if len(line_no) == 8:
             line_no = "All"
 
-        req = post_login()
-        cookies = req.cookies
-        if req.status_code != 302:
-            print("Prematurely exiting")
-            return (req.json(), req.status_code)
+        try:
+            req = post_login()
+            if req.status_code != 302:
+                raise LoginFailedException("Login failed!", req)
 
-        req = post_get_calls(cookies, line_no, ext_no, date_range)
-        if req.status_code != 200:
-            print("Prematurely exiting get calls")
-            return (
-                jsonify(
-                    {
-                        "error": "Cannot retrieve call logs from Callture, "
-                        + json_error_check(req)
-                    }
-                ),
-                req.status_code,
-            )
+            cookies = req.cookies
+            req = post_get_calls(cookies, line_no, ext_no, date_range)
+            if req.status_code != 200:
+                raise GetCallException("Cannot retrieve call logs from Callture, " + json_error_check(req), req)
 
-        req = post_download_calls(cookies)
-        if req.status_code != 200:
-            print("Prematurely exiting download calls")
-            return (
-                jsonify(
-                    {
-                        "error": "Cannot download call logs from Callture, "
-                        + json_error_check(req)
-                    }
-                ),
-                req.status_code,
-            )
+            req = post_download_calls(cookies)
+            if req.status_code != 200:
+                raise DownloadCallException("Cannot download call logs from Callture, " + json_error_check(req), req)
 
-        df = parse_req_to_df(req)
-        if df is None:
-            print("Cannot parse to Excel")
-            return jsonify({"error": "Failed to parse call log file to Excel"})
+            df = parse_req_to_df(req)
+            if df is None:
+                raise ParseException("Failed to parse call log file to Excel")
+
+        except LoginFailedException as e:
+            return (e.response.json(), e.response.status_code)
+        except GetCallException as e:
+            print("Prematurely Exiting")
+            return (jsonify({"error": str(e)}), e.response.status_code)
+        except DownloadCallException as e:
+            print("Prematurely Exiting")
+            return (jsonify({"error": str(e)}), e.response.status_code)
+        except ParseException as e:
+            print("Prematurely Exiting")
+            return (jsonify({"error": str(e)}), e.response.status_code)
+
+        
 
         df = process_df(df)
 
