@@ -270,6 +270,7 @@ input:focus-within {
 }
 .submit-btn.hide {
   pointer-events: none;
+  display: none;
 }
 
 
