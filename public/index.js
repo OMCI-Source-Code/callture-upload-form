@@ -86,9 +86,14 @@ document
             alert(`Successfully uploaded to drive!`);
         } catch (exception) {
             console.error(exception);
-            alert(`Error: ${exception.message || exception}`);
+            if(confirm(`Error: ${exception.message || exception} Would you like to try again?`)){
+			var restart_pending = true;
+			}
+			
         } finally {
             document.getElementById("loader").style.display = "none";
         }
+		
+		if(restart_pending){document.getElementById("submit-btn").click(); restart_pending = false;} //restart process by clicking submit btn for user
 
     });
