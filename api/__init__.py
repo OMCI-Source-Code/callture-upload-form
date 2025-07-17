@@ -61,11 +61,7 @@ def create_app():
 
         try:
             day_id_map = setup_date_folders(date_range)
-            upload_df_to_drive(df, day_id_map, True)
-
-            # Sync
-            # upload_df_to_drive(df, day_id_map)
-
+            upload_df_to_drive(df, day_id_map)
             print(f"Uploading finished")
 
         except TransferException as e:

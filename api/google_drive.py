@@ -36,7 +36,7 @@ import traceback
 
 from api.errors import TransferException
 
-from api.callture import a_download_recording, download_recording
+from api.callture import download_recording
 # from api.callture import a_download_recording
 from api.pandas_utility import PersonRow
 
@@ -58,74 +58,7 @@ def get_service():
     service = build("drive", "v3", credentials=credentials)
     return service
 
-
-def upload_to_drive(
-    recording, object_bytes: bytes, root_id=os.environ.get("ROOT_FOLDER_ID")
-):
-    print(f"Uploading {recording.CDRID}")
-    recording_id = recording.CDRID
-
-    # For some reason, when downloading from the new interface, it does not include the extension number
-    # name = "_".join(recording.Time.split()[::-1]) + "_" + str(recording.Line_No) + "_" + str(recording.Ext_No) + "_" + str(recording_id)
-    name = (
-        "_".join(recording.Time.split()[::-1])
-        + "_"
-        + str(recording.Line_No)
-        + "_"
-        + str(recording_id)
-    )
-    description = "\n".join(
-        [
-            f"{field}: {getattr(recording, field)}"
-            for field in recording._fields[1:]
-            if field not in ["Year", "Month", "Day"]
-        ]
-    )
-    mime_type = "audio/mpeg"
-
-    object_stream = BytesIO(object_bytes)
-
-    try:
-        service = get_service()
-        response = (
-            service.files().list(
-                q=f"name = '{name}' and '{root_id}' in parents and trashed = false",
-                spaces="drive",
-                fields="files(id, name)",
-                supportsAllDrives=True,
-                includeItemsFromAllDrives=True,
-            )
-            .execute()
-        )
-
-        if response.get("files"):
-            print(f"File '{name}' already exists in Drive. Skipping upload.")
-            return response["files"][0]["id"]
-        
-        file_metadata = {"name": name, "parents": [root_id], "description": description}
-        media_stream = MediaIoBaseUpload(
-            object_stream, mimetype=mime_type, resumable=True
-        )
-        # pylint: disable=maybe-no-member
-        file = (
-            service.files()
-            .create(
-                body=file_metadata,
-                media_body=media_stream,
-                fields="id",
-                supportsAllDrives=True,
-            )
-            .execute()
-        )
-
-    except HttpError as error:
-        print(f"An error occurred: {error}")
-        file = None
-
-    return file.get("id")
-
-
-async def a_upload_to_drive(
+async def upload_to_drive(
     recording, object_bytes: bytes, root_id=os.environ.get("ROOT_FOLDER_ID")
 ):
     recording_id = recording.CDRID
@@ -401,26 +334,13 @@ def setup_date_folders(
 def upload_df_to_drive(
     df: pd.DataFrame,
     day_id_map: dict[str, dict[str, dict[str, str]]],
-    async_enabled: bool = False,
 ):
-    if async_enabled:
-        asyncio.run(_upload_df_async(df, day_id_map))
-    else:
-        _upload_df_sync(df, day_id_map)
-
-
-def _upload_df_sync(df, day_id_map):
-    print("Starting to Upload Sync")
-    for recording in df.itertuples():
-        day_folder_id = day_id_map[recording.Year][recording.Month][recording.Day]
-        req = download_recording(recording)
-        upload_to_drive(recording, req.content, day_folder_id)
+    asyncio.run(_upload_df_async(df, day_id_map))
 
 
 async def _upload_df_async(
     df: pd.DataFrame,
     day_id_map: dict[str, dict[str, dict[str, str]]],
-    use_semaphore: bool = False,
 ):
     callture_semaphore = asyncio.Semaphore(
         int(os.environ.get("CALLTURE_DOWNLOAD_LIMIT", 30))
@@ -451,8 +371,8 @@ async def _upload_df_async(
 async def transfer_file(recording: PersonRow, day_folder_id: str, callture_semaphore: asyncio.Semaphore, google_semaphore: asyncio.Semaphore):
     try:
         async with callture_semaphore:
-            req = await a_download_recording(recording)
+            req = await download_recording(recording)
         async with google_semaphore:
-            await a_upload_to_drive(recording, req.content, day_folder_id)
+            await upload_to_drive(recording, req.content, day_folder_id)
     except Exception as e:
         raise TransferException(traceback.format_exc(), recording.CDRID) from e
