@@ -1,5 +1,3 @@
-
-
 class TransferException(Exception):
     recording_id: int | None
 

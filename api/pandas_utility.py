@@ -51,7 +51,7 @@ def parse_req_to_df(req: Response):
             error = req.json()
         except Exception:
             error = "Invalid JSON response"
-        print ("Details:", error)
+        print("Details:", error)
         return None
 
 
