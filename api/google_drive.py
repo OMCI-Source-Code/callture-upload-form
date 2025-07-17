@@ -20,6 +20,7 @@ Date: 2025-07-14
 import asyncio
 import json
 import os
+import traceback
 import warnings
 from collections import defaultdict
 from datetime import datetime, timedelta
@@ -32,11 +33,10 @@ from google.oauth2 import service_account
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from googleapiclient.http import MediaIoBaseUpload
-import traceback
-
-from api.errors import TransferException
 
 from api.callture import download_recording
+from api.errors import TransferException
+
 # from api.callture import a_download_recording
 from api.pandas_utility import PersonRow
 
@@ -57,6 +57,7 @@ def get_service():
     )
     service = build("drive", "v3", credentials=credentials)
     return service
+
 
 async def upload_to_drive(
     recording, object_bytes: bytes, root_id=os.environ.get("ROOT_FOLDER_ID")
@@ -87,7 +88,7 @@ async def upload_to_drive(
         async with Aiogoogle(service_account_creds=creds) as aiogoogle:
             service = await aiogoogle.discover("drive", "v3")
 
-            #Finds folder of recording_status to put the file into
+            # Finds folder of recording_status to put the file into
             folder = await aiogoogle.as_service_account(
                 service.files.list(
                     q=f"name = '{recording_status}' and '{root_id}' in parents and trashed = false and mimeType = 'application/vnd.google-apps.folder'",
@@ -99,9 +100,11 @@ async def upload_to_drive(
             if folder["files"]:
                 status_folder_id = folder["files"][0]["id"]
             else:
-                print(f"Warning: Folder '{recording_status}' was not found in root so uploading file to root instead")
+                print(
+                    f"Warning: Folder '{recording_status}' was not found in root so uploading file to root instead"
+                )
                 status_folder_id = root_id
-            #Checks if the recording already exists in folder location
+            # Checks if the recording already exists in folder location
             find_dupe = await aiogoogle.as_service_account(
                 service.files.list(
                     q=f"name = '{name}' and '{status_folder_id}' in parents and trashed = false",
@@ -316,9 +319,16 @@ def setup_date_folders(
         day_id_map[current_year][current_month][current_day] = folder["id"]
         current_date += timedelta(days=1)
 
-        #Creates folders that will hold the recordings by status inside the date folders that are made for better sorting
+        # Creates folders that will hold the recordings by status inside the date folders that are made for better sorting
         day_folder_id = day_id_map[current_year][current_month][current_day]
-        recording_status_names = ['Answered','Caller Hangup','Dial Out','Dial Out-X','Voice Mail','Missed Call']
+        recording_status_names = [
+            "Answered",
+            "Caller Hangup",
+            "Dial Out",
+            "Dial Out-X",
+            "Voice Mail",
+            "Missed Call",
+        ]
         for recording_status in recording_status_names:
             folder = get_drive_folder(recording_status, day_folder_id)
             if not folder:
@@ -345,17 +355,19 @@ async def _upload_df_async(
     callture_semaphore = asyncio.Semaphore(
         int(os.environ.get("CALLTURE_DOWNLOAD_LIMIT", 30))
     )
-    google_semaphore = asyncio.Semaphore(int(os.environ.get("GOOGLE_UPLOAD_LIMIT", 100)))
+    google_semaphore = asyncio.Semaphore(
+        int(os.environ.get("GOOGLE_UPLOAD_LIMIT", 100))
+    )
 
     print("Starting to Upload Async")
-    
+
     task_states: list[TransferException | None] = await asyncio.gather(
         *(
             transfer_file(
                 recording,
                 day_id_map[recording.Year][recording.Month][recording.Day],
                 callture_semaphore,
-                google_semaphore
+                google_semaphore,
             )
             for recording in df.itertuples()
         ),
@@ -366,9 +378,17 @@ async def _upload_df_async(
         print("The following errors occured")
         for e in errors:
             print(e)
-        raise TransferException(f"File Transfer Error: file(s) with id's: {[e.recording_id for e in errors]} could not be transferred. Please refer to logs for more details")
+        raise TransferException(
+            f"File Transfer Error: file(s) with id's: {[e.recording_id for e in errors]} could not be transferred. Please refer to logs for more details"
+        )
 
-async def transfer_file(recording: PersonRow, day_folder_id: str, callture_semaphore: asyncio.Semaphore, google_semaphore: asyncio.Semaphore):
+
+async def transfer_file(
+    recording: PersonRow,
+    day_folder_id: str,
+    callture_semaphore: asyncio.Semaphore,
+    google_semaphore: asyncio.Semaphore,
+):
     try:
         async with callture_semaphore:
             req = await download_recording(recording)

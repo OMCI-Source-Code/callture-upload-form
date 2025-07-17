@@ -60,6 +60,7 @@ def post_download_calls(cookies):
     req = httpx.post(CALL_LOG_URL, data=form_data, cookies=cookies, timeout=10.0)
     return req
 
+
 async def download_recording(recording: PersonRow):
     print(f"Downloading {recording.CDRID}")
     line_number = recording.Line_No
