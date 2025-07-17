@@ -98,14 +98,14 @@ document
             var restart_pending = false;
             console.error(exception);
             modal_popup.textContent = "Upload failed!"
-            setTimeout(() => { modal_popup.classList.remove('show'); }, "1500");
-            setTimeout(() => { modal_popup.textContent = `Error: ${exception}`; modal_popup.classList.add('show'); }, "2000");
+            setTimeout(() => { modal_popup.classList.remove('show'); }, "1000");
+            setTimeout(() => { modal_popup.textContent = `Error: ${exception}`; modal_popup.classList.add('show'); }, "1500");
             setTimeout(() => {
                 if (confirm(`Error: ${exception.message || exception} Would you like to try again?`)) {
                     restart_pending = true;
                     modal_popup.classList.remove('show');
                 };
-            }, "2500");
+            }, "2000");
             modal_popup.classList.remove('show');
 
         } finally {

@@ -23,6 +23,11 @@ def create_app():
 
     @app.route("/upload", methods=["POST"])
     def upload():
+        def json_error_check(req):
+            try:
+                return req.json()
+            except Exception:
+                return 'Invalid JSON response'
         data = request.get_json()
         line_no = data.get("lineNo")
         ext_no = "All"
