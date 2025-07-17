@@ -1,6 +1,7 @@
 from dotenv import load_dotenv
 from flask import Flask, jsonify, request, send_from_directory
 from flask_cors import CORS
+from errors import TransferException
 
 from api.callture import post_download_calls, post_get_calls, post_login
 from api.google_drive import setup_date_folders, upload_df_to_drive
@@ -53,7 +54,7 @@ def create_app():
 
         df = parse_req_to_df(req)
         if df is None:
-            print("CAnnot parse to Excel")
+            print("Cannot parse to Excel")
             return jsonify({"error" : "Failed to parse call log file to Excel"})
         
         df = process_df(df)
