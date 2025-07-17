@@ -269,6 +269,38 @@ input:focus-within {
   transform: translateY(0);
 }
 
+
+/* Modal container */
+.modal-popup {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgb(28, 27, 27);
+  border: 2px solid #D9AE4C;
+  opacity: 0;
+  pointer-events: none;
+  color: white;
+  margin: auto;
+  width: 50%;
+  max-width: 100%;
+  height: 40px;
+  position: sticky;
+  bottom: 20px;
+  transition: opacity 0.35s ease-in, transform 0.35s;
+}
+
+.modal-popup:hover {
+  transform: scale(1.1);
+}
+.modal-popup.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.modal {
+  transition: 0.35s ease-in;
+  max-width: 100%;
+}
 /* Responsive design */
 @media (max-width: 768px) {
   .form-container {
