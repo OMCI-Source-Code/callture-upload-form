@@ -87,7 +87,21 @@ def upload_to_drive(
 
     try:
         service = get_service()
+        response = (
+            service.files().list(
+                q=f"name = '{name}' and '{root_id}' in parents and trashed = false",
+                spaces="drive",
+                fields="files(id, name)",
+                supportsAllDrives=True,
+                includeItemsFromAllDrives=True,
+            )
+            .execute()
+        )
 
+        if response.get("files"):
+            print(f"File '{name}' already exists in Drive. Skipping upload.")
+            return response["files"][0]["id"]
+        
         file_metadata = {"name": name, "parents": [root_id], "description": description}
         media_stream = MediaIoBaseUpload(
             object_stream, mimetype=mime_type, resumable=True
@@ -114,7 +128,6 @@ def upload_to_drive(
 async def a_upload_to_drive(
     recording, object_bytes: bytes, root_id=os.environ.get("ROOT_FOLDER_ID")
 ):
-    print(f"Uploading {recording.CDRID}")
     recording_id = recording.CDRID
 
     # For some reason, when downloading from the new interface, it does not include the extension number
@@ -140,6 +153,19 @@ async def a_upload_to_drive(
     try:
         async with Aiogoogle(service_account_creds=creds) as aiogoogle:
             service = await aiogoogle.discover("drive", "v3")
+            find_dupe = await aiogoogle.as_service_account(
+                service.files.list(
+                    q=f"name = '{name}' and '{root_id}' in parents and trashed = false",
+                    spaces="drive",
+                    fields="files(id, name)",
+                    supportsAllDrives=True,
+                    includeItemsFromAllDrives=True,
+                )
+            )
+            if find_dupe["files"]:
+                print(f"File '{name}' already exists in drive. Skipping upload.")
+                return
+            print(f"Uploading {recording.CDRID}")
             file_metadata = {
                 "name": name,
                 "parents": [root_id],
