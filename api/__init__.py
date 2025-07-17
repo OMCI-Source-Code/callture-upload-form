@@ -65,6 +65,7 @@ def create_app():
         except ParseException as e:
             print("Prematurely Exiting")
             return (jsonify({"error": str(e)}), e.response.status_code)
+
         
         df = process_df(df)
 
