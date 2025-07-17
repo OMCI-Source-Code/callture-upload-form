@@ -273,6 +273,10 @@ input:focus-within {
 .submit-btn:active {
   transform: translateY(0);
 }
+.submit-btn.hide {
+  pointer-events: none;
+  display: none;
+}
 
 
 /* Modal container */
@@ -289,6 +293,7 @@ input:focus-within {
   width: 50%;
   max-width: 100%;
   height: 40px;
+  max-height: 100px;
   position: sticky;
   bottom: 20px;
   transition: opacity 0.35s ease-in, transform 0.35s;
@@ -375,6 +380,7 @@ input:focus-within {
   border-top-color: #d9ae4c;
   border-left-color: #d9ae4c;
   animation: spin 1s infinite ease-in;
+  pointer-events: none;
 }
 
 @keyframes spin {
@@ -409,6 +415,4 @@ input:focus-within {
     width: 100%;
     min-width: auto;
   }
-}
-
 }

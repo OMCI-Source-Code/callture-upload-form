@@ -61,16 +61,7 @@ def post_download_calls(cookies):
     return req
 
 
-def download_recording(recording: PersonRow):
-    print(f"Downloading {recording.CDRID}")
-    line_number = recording.Line_No
-    recording_id = recording.CDRID
-    curr_file_url = DOWNLOAD_URL + str(line_number) + "&FileID=" + str(recording_id)
-    req = httpx.get(curr_file_url, timeout=10.0)
-    return req
-
-
-async def a_download_recording(recording: PersonRow):
+async def download_recording(recording: PersonRow):
     print(f"Downloading {recording.CDRID}")
     line_number = recording.Line_No
     recording_id = recording.CDRID
