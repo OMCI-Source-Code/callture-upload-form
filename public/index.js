@@ -99,12 +99,12 @@ document
             setTimeout(() => { modal_popup.textContent = "Upload completed successfully!"; modal_popup.classList.add('show'); }, "500");
             setTimeout(() => { modal_popup.classList.remove('show'); }, "7000");
         } catch (exception) {
-            var restart_pending = false;
             console.error(exception);
             setTimeout(() => {
                 if (confirm(`Error: Would you like to try again?`)) {
-                    restart_pending = true;
+                    var restart_pending = true;
                     modal_popup.classList.remove('show');
+                    if(restart_pending){document.getElementById("submit-btn").click(); restart_pending = false;}
                 };
             }, "2350");
             modal_popup.classList.remove('show');
@@ -113,8 +113,5 @@ document
             document.getElementById("loader").style.display = "none";
         }
 		
-		if(restart_pending){document.getElementById("submit-btn").click(); restart_pending = false;} //restart process by clicking submit btn for user
-
-        if (restart_pending) { document.getElementById("submit-btn").click(); restart_pending = false; } //restart process by clicking submit btn for user
 
     });

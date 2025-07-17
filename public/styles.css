@@ -381,7 +381,7 @@ input:focus-within {
     transform: rotate(360deg);
   }
   
-  
+} 
 /* mobile-specific CSS */  
 @media (max-width: 480px) {
   body {
