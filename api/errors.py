@@ -1,5 +1,3 @@
-
-
 class TransferException(Exception):
     recording_id: int | None
 
@@ -24,3 +22,4 @@ class DownloadCallException(Exception):
 
 class ParseException(Exception):
     pass
+

@@ -3,24 +3,24 @@ from flask import Flask, jsonify, request, send_from_directory
 from flask_cors import CORS
 
 from api.callture import post_download_calls, post_get_calls, post_login
+from api.errors import TransferException
 from api.google_drive import setup_date_folders, upload_df_to_drive
 from api.pandas_utility import parse_req_to_df, process_df
 from api.errors import (TransferException, DownloadCallException, GetCallException, LoginFailedException, ParseException)
 
+
 def create_app():
-    app = Flask(__name__, static_folder='../public', static_url_path='')
+    app = Flask(__name__, static_folder="../public", static_url_path="")
     CORS(app)
     load_dotenv()
 
-
-    @app.route('/')
+    @app.route("/")
     def form():
-        return send_from_directory(app.static_folder, 'index.html')
+        return send_from_directory(app.static_folder, "index.html")
 
     @app.route("/login", methods=["POST"])
     def login():
         pass
-
 
     @app.route("/upload", methods=["POST"])
     def upload():
@@ -28,7 +28,9 @@ def create_app():
             try:
                 return req.json()
             except Exception:
+
                 return 'Something went wrong while fetching the data'
+
         data = request.get_json()
         line_no = data.get("lineNo")
         ext_no = "All"
@@ -67,15 +69,12 @@ def create_app():
             return (jsonify({"error": str(e)}), e.response.status_code)
 
         
+
         df = process_df(df)
 
         try:
             day_id_map = setup_date_folders(date_range)
-            upload_df_to_drive(df, day_id_map, True)
-
-            # Sync
-            # upload_df_to_drive(df, day_id_map)
-
+            upload_df_to_drive(df, day_id_map)
             print(f"Uploading finished")
 
         except TransferException as e:
@@ -84,4 +83,5 @@ def create_app():
         except Exception as e:
             return ({"message": str(e)}, 500)
         return (jsonify({"message": "Successfully uploaded"}), 200)
+
     return app
