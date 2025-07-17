@@ -48,10 +48,14 @@ document
         const modal_popup = document.getElementById("modal_popup");
         const formData = new FormData(this);
 
-        const fromDate = formData.get("fromDate");
+        const fromDateStr = formData.get("fromDate");
+        const [fromYear,fromMonth,fromDay] = fromDateStr.split("-").map(Number);
+        const fromDate = new Date(fromYear,fromMonth-1,fromDay)
         // const fromTime = formData.get("fromTime");
         const fromTime = "00:00"
-        const toDate = formData.get("toDate");
+        const toDateStr = formData.get("toDate");
+        const [toYear,toMonth,toDay] = toDateStr.split("-").map(Number);
+        const toDate = new Date(toYear,toMonth-1,toDay)
         const toTime = "23:59"
         // const toTime = formData.get("toTime");
         const selectedNumbers = [];
@@ -101,16 +105,18 @@ document
             setTimeout(() => { modal_popup.classList.remove('show'); }, "1000");
             setTimeout(() => { modal_popup.textContent = `Error: ${exception}`; modal_popup.classList.add('show'); }, "1500");
             setTimeout(() => {
-                if (confirm(`Error: ${exception.message || exception} Would you like to try again?`)) {
+                if (confirm(`Error: Would you like to try again?`)) {
                     restart_pending = true;
                     modal_popup.classList.remove('show');
                 };
             }, "2000");
             modal_popup.classList.remove('show');
-
+          
         } finally {
             document.getElementById("loader").style.display = "none";
         }
+		
+		if(restart_pending){document.getElementById("submit-btn").click(); restart_pending = false;} //restart process by clicking submit btn for user
 
         if (restart_pending) { document.getElementById("submit-btn").click(); restart_pending = false; } //restart process by clicking submit btn for user
 
