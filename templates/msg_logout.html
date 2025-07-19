@@ -1,0 +1,11 @@
+{% extends 'msg.html' %}
+
+{% block header %}
+  <h1 class="alert">{% block title %}Logged out{% endblock %}</h1>
+{% endblock %}
+
+{% block content %}
+    <div class="alert"> You have successfully been logged out.
+        </br>
+        <a href='login'>  Log in </a> </div>
+{% endblock %}

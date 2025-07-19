@@ -1,0 +1,9 @@
+{% extends 'msg.html' %}
+
+{% block header %}
+  <h1 class="alert">{% block title %}Protected content{% endblock %}</h1>
+{% endblock %}
+
+{% block content %}
+    <div class="alert"> Please <a href="/login"> log in</a> in order to view this content. </div>
+{% endblock %}
