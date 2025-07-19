@@ -2,7 +2,7 @@ import os
 
 import flask_login
 from dotenv import load_dotenv
-from flask import Flask, jsonify, redirect, request, send_from_directory, flash
+from flask import Flask, jsonify, redirect, request, send_from_directory
 from flask_cors import CORS
 
 from api.callture import post_download_calls, post_get_calls, post_login
@@ -32,9 +32,11 @@ def create_app():
             self.id = username
             self.password = password
 
-    users = {os.environ.get("SITE_USERNAME"):
-                 User(os.environ.get("SITE_USERNAME"),
-                      os.environ.get("SITE_PASSWORD"))}
+    users = {
+        os.environ.get("SITE_USERNAME"): User(
+            os.environ.get("SITE_USERNAME"), os.environ.get("SITE_PASSWORD")
+        )
+    }
 
     @login_manager.user_loader
     def user_loader(id):
@@ -48,7 +50,7 @@ def create_app():
     def login():
         return """<form method=post>
           Username: <input name="username"><br>
-          Password: <input name="password" type=password><br>
+          Password: <input name="password" type=password><br> <br>
           <button>Log In</button>
         </form>"""
 
@@ -63,17 +65,23 @@ def create_app():
         return redirect("/")
 
     @app.route("/")
-    @flask_login.fresh_login_required
+    # @flask_login.fresh_login_required
     def form():
-        return send_from_directory(app.static_folder, "index.html")
+        if flask_login.current_user.is_authenticated:
+            return send_from_directory(app.static_folder, "index.html")
+        return "Please <a href='login'> log in</a> to view this page."
 
     @app.route("/logout")
     def logout():
         flask_login.logout_user()
-        #flash("Logged out successfully!", 'message')
-        return redirect("login")
+        return (
+            "You have successfully been logged out. </br> <a href='login'>  Log in </a>"
+        )
 
     @app.route("/upload", methods=["POST"])
+    # @flask_login.fresh_login_required
+    # ^ is this needed?
+
     def upload():
         def json_error_check(req):
             try:
