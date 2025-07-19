@@ -2,7 +2,7 @@ import os
 
 import flask_login
 from dotenv import load_dotenv
-from flask import Flask, jsonify, redirect, request, send_from_directory
+from flask import Flask, jsonify, redirect, render_template, request, send_from_directory
 from flask_cors import CORS
 
 from api.callture import post_download_calls, post_get_calls, post_login
@@ -18,7 +18,7 @@ from api.pandas_utility import parse_req_to_df, process_df
 
 
 def create_app():
-    app = Flask(__name__, static_folder="../public", static_url_path="")
+    app = Flask(__name__, static_folder="../public", static_url_path="", template_folder="../templates")
     CORS(app)
     load_dotenv()
 
@@ -42,10 +42,6 @@ def create_app():
     def user_loader(id):
         return users.get(id)
 
-    # @app.route("/login", methods=["POST"])
-    # def login():
-    #     pass
-
     @app.get("/login")
     def login():
         return """<form method=post>
@@ -65,23 +61,17 @@ def create_app():
         return redirect("/")
 
     @app.route("/")
-    # @flask_login.fresh_login_required
     def form():
         if flask_login.current_user.is_authenticated:
             return send_from_directory(app.static_folder, "index.html")
-        return "Please <a href='login'> log in</a> to view this page."
+        return render_template("msg_login_required.html")
 
     @app.route("/logout")
     def logout():
         flask_login.logout_user()
-        return (
-            "You have successfully been logged out. </br> <a href='login'>  Log in </a>"
-        )
+        return render_template("msg_logout.html")
 
     @app.route("/upload", methods=["POST"])
-    # @flask_login.fresh_login_required
-    # ^ is this needed?
-
     def upload():
         def json_error_check(req):
             try:
