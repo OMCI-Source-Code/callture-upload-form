@@ -73,7 +73,8 @@ def create_app():
         line_no = data.get("lineNo")
         ext_no = "All"
         date_range = data.get("dateRange")
-
+        if not line_no:
+            return ({"message": "No line number selected"}, 500)
         try:
             req = post_login()
             if req.status_code != 302:
