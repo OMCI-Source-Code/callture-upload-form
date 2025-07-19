@@ -71,7 +71,7 @@ input:focus-within {
 }
 
 /* Date inputs */
-.date-inputs {
+.date-inputs{
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 20px;
@@ -393,7 +393,29 @@ input:focus-within {
     transform: rotate(360deg);
   }
   
-} 
+}
+
+/* specific to msg template */
+ .content{
+  font-size: larger;
+  color: white;
+   display: flex;
+   align-content: center;
+   justify-content: center;
+}
+
+ .inner-content{
+   border: 2px solid white;
+   border-radius: 8px;
+   background-color: #555555;
+   padding: 8px;
+ }
+ .content a:visited{
+
+   color: #d9ae4c;
+
+ }
+
 /* mobile-specific CSS */  
 @media (max-width: 480px) {
   body {
