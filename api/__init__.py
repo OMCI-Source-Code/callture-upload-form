@@ -42,7 +42,6 @@ def create_app():
 
         data = request.get_json()
         line_no = data.get("lineNo")
-        print("LINE NUMBEEER: ", line_no)
         ext_no = "All"
         date_range = data.get("dateRange")
         if len(line_no) == 8:
