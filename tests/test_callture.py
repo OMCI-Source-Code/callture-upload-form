@@ -78,13 +78,3 @@ class TestCalls(unittest.TestCase):
         response = post_download_calls(response.cookies)
 
         self.assertEqual(response.status_code, 200)
-
-    # @patch('api.download_recording')
-    # def test_download_recordings(self, fake_login):
-    #     test_response = MagicMock()
-    #     test_response.status_code = 200
-    #     fake_login.return_value = test_response
-
-    #     response = download_recording() Add recording stuff
-
-    #     self.assertEqual(response.status_code, 200)
