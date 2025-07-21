@@ -25,12 +25,7 @@ def create_app():
 
     @app.route("/login", methods=["POST"])
     def login():
-        try:
-            req = post_login()
-            if req.status_code != 302:
-                raise LoginFailedException("Login failed!", req)
-        except LoginFailedException as e:
-            return (jsonify({"error": str(e)}), e.response.status_code)
+        pass
 
     @app.route("/upload", methods=["POST"])
     def upload():
