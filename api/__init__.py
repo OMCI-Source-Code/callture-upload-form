@@ -19,7 +19,12 @@ def create_app():
 
     @app.route("/login", methods=["POST"])
     def login():
-        pass
+        try:
+            req = post_login()
+            if req.status_code != 302:
+                raise LoginFailedException("Login failed!", req)
+        except LoginFailedException as e:
+            return (jsonify({"error": str(e)}), e.response.status_code)
 
 
     @app.route("/upload", methods=["POST"])
@@ -31,6 +36,7 @@ def create_app():
                 return 'Something went wrong while fetching the data'
         data = request.get_json()
         line_no = data.get("lineNo")
+        print("LINE NUMBEEER: ",line_no)
         ext_no = "All"
         date_range = data.get("dateRange")
         if len(line_no) == 8:
@@ -55,7 +61,7 @@ def create_app():
                 raise ParseException("Failed to parse call log file to Excel")
 
         except LoginFailedException as e:
-            return (e.response.json(), e.response.status_code)
+            return (jsonify({"error": str(e)}), e.response.status_code)
         except GetCallException as e:
             print("Prematurely Exiting")
             return (jsonify({"error": str(e)}), e.response.status_code)
