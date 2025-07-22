@@ -19,20 +19,18 @@ body {
   background: #d9ae4c;
 }
 
-input:focus-within {
-  color: #d9ae4c;
-}
-
 .logout{
   color: white;
-  font-size: smaller;
-  float: right;
+}
+
+.logout:hover{
+  color: black;
 }
 
 /* Container */
 .form-container {
   max-width: 800px;
-  margin: 0 auto;
+  margin: 4px auto;
   background: #0a0a0a;
   border-radius: 1.25rem;
   border: 2px solid #d9ae4c;
@@ -90,7 +88,8 @@ input:focus-within {
 }
 
 .input-group input[type="date"],
-.input-group input[type="text"] {
+.input-group input[type="password"],
+.input-group input[type="text"]{
   padding: 12px;
   border: 2px solid #ddd;
   border-radius: 8px;
@@ -100,7 +99,8 @@ input:focus-within {
 }
 
 .input-group input[type="date"]:focus,
-.input-group input[type="text"]:focus {
+.input-group input[type="text"]:focus,
+.input-group input[type="password"]:focus{
   outline: none;
   border-color: #d9ae4c;
   box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
@@ -151,8 +151,8 @@ input:focus-within {
   flex: 1;
   margin-bottom: 0;
 }
-/*
-.browse-btn {
+
+.login-btn {
   background: #ffffff;
   color: #555555;
   border: 2px solid #ddd;
@@ -165,7 +165,7 @@ input:focus-within {
   white-space: nowrap;
 }
 
-.browse-btn:hover {
+.login-btn:hover {
   background: #D9AE4C;
   transform: translateY(-2px);
   box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
@@ -173,7 +173,6 @@ input:focus-within {
   border-color: #555555;
 }
 
-*/
 
 /* Checkbox group */
 .checkbox-group {
@@ -398,7 +397,8 @@ input:focus-within {
 /* specific to msg template */
  .content{
   font-size: larger;
-  color: white;
+   color: white;
+   color: white;
    display: flex;
    align-content: center;
    justify-content: center;
@@ -411,9 +411,7 @@ input:focus-within {
    padding: 8px;
  }
  .content a:visited{
-
    color: #d9ae4c;
-
  }
 
 /* mobile-specific CSS */  
@@ -437,5 +435,10 @@ input:focus-within {
   .submit-btn {
     width: 100%;
     min-width: auto;
+  }
+
+  .checkbox-controls{
+    flex-direction: row;
+
   }
 }
