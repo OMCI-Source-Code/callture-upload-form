@@ -1,3 +1,17 @@
+"""
+__init__.py
+
+This module acts as the main flask app, it defines all site routes and implements upload logic from other modules
+
+Routes:
+    root
+    login
+    upload
+
+Author: Terry Luan
+Date: 2025-07-
+"""
+
 from dotenv import load_dotenv
 from flask import Flask, jsonify, request, send_from_directory
 from flask_cors import CORS
@@ -6,7 +20,13 @@ from api.callture import post_download_calls, post_get_calls, post_login
 from api.errors import TransferException
 from api.google_drive import setup_date_folders, upload_df_to_drive
 from api.pandas_utility import parse_req_to_df, process_df
-from api.errors import (TransferException, DownloadCallException, GetCallException, LoginFailedException, ParseException)
+from api.errors import (
+    TransferException,
+    DownloadCallException,
+    GetCallException,
+    LoginFailedException,
+    ParseException,
+)
 
 
 def create_app():
@@ -29,18 +49,27 @@ def create_app():
                 return req.json()
             except Exception:
 
-                return 'Something went wrong while fetching the data'
+                return "Something went wrong while fetching the data"
+
         def process_info(line_no):
             try:
                 req = post_get_calls(cookies, line_no, ext_no, date_range)
                 if req.status_code != 200:
-                    raise GetCallException("Cannot retrieve call logs from Callture, " + json_error_check(req), req)
-                if "No Call Logs" in req.content.decode('utf-8', errors='ignore'):
+                    raise GetCallException(
+                        "Cannot retrieve call logs from Callture, "
+                        + json_error_check(req),
+                        req,
+                    )
+                if "No Call Logs" in req.content.decode("utf-8", errors="ignore"):
                     print("No Call Logs, returning")
                     return
                 req = post_download_calls(cookies)
                 if req.status_code != 200:
-                    raise DownloadCallException("Cannot download call logs from Callture, " + json_error_check(req), req)
+                    raise DownloadCallException(
+                        "Cannot download call logs from Callture, "
+                        + json_error_check(req),
+                        req,
+                    )
 
                 df = parse_req_to_df(req)
                 if df is None:
@@ -68,7 +97,7 @@ def create_app():
             except Exception as e:
                 return ({"message": str(e)}, 500)
             return (jsonify({"message": "Successfully uploaded"}), 200)
-        
+
         data = request.get_json()
         line_no = data.get("lineNo")
         ext_no = "All"
@@ -82,9 +111,10 @@ def create_app():
             cookies = req.cookies
         except LoginFailedException as e:
             return (e.response.json(), e.response.status_code)
-        
+
         for line in line_no:
             print(f"Processing line.no {line}")
             processResponse = process_info(line)
         return processResponse
+
     return app
