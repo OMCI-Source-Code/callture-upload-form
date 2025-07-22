@@ -75,10 +75,12 @@ input:focus-within {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  gap: 8px;
 }
 
 .input-group label {
   font-weight: 500;
+  color: #f8f9fa;
   color: #f8f9fa;
   font-size: 1.005em;
 }
@@ -146,6 +148,7 @@ input:focus-within {
   margin-bottom: 0;
 }
 /*
+/*
 .browse-btn {
   background: #ffffff;
   color: #555555;
@@ -166,6 +169,8 @@ input:focus-within {
   color: #ffffff;
   border-color: #555555;
 }
+
+*/
 
 */
 
@@ -411,4 +416,3 @@ input:focus-within {
     min-width: auto;
   }
 }
-

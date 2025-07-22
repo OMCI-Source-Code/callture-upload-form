@@ -1,5 +1,3 @@
-
-
 class TransferException(Exception):
     recording_id: int | None
 
@@ -23,4 +21,7 @@ class DownloadCallException(Exception):
         super().__init__(message)
 
 class ParseException(Exception):
-    pass
+    def __init__(self, message, response=None):
+        self.response = response
+        super().__init__(message)
+

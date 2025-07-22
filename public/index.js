@@ -61,6 +61,21 @@ document
         const toTime = "23:59"
         // const toTime = formData.get("toTime");
         const selectedNumbers = [];
+        if (isNaN(fromDate.getTime()) || isNaN(toDate.getTime())) {
+            modal_popup.textContent = "Invalid date(s) provided"
+            setTimeout(() => { modal_popup.classList.remove('show'); }, "1500");
+            setTimeout(() => { modal_popup.textContent = `Error: Invalid dates provided`; modal_popup.classList.add('show'); }, "2000");
+            setTimeout(() => { modal_popup.classList.remove('show'); }, "10000");
+            throw new Error(`Error: Invalid dates provided`)
+        }
+        else if (toDate < fromDate) {
+            modal_popup.textContent = "Invalid Date range: 'To' date must be after 'From' date"
+            console.log("hello")
+            setTimeout(() => { modal_popup.classList.remove('show'); }, "1500");
+            setTimeout(() => { modal_popup.textContent = `Error: Invalid Date range: 'To' date must be after 'From' date`; modal_popup.classList.add('show'); }, "2000");
+            setTimeout(() => { modal_popup.classList.remove('show'); }, "10000");
+            throw new Error(`Invalid Date range: 'To' date must be after 'From' date`)
+        }
 
         const dateRange = formatDate(fromDate, fromTime) + ' - ' + formatDate(toDate, toTime);
         // Get all checked contacts
