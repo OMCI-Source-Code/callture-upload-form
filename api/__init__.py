@@ -44,11 +44,7 @@ def create_app():
 
     @app.get("/login")
     def login():
-        return """<form method=post>
-          Username: <input name="username"><br>
-          Password: <input name="password" type=password><br> <br>
-          <button>Log In</button>
-        </form>"""
+        return send_from_directory(app.static_folder, "login.html")
 
     @app.post("/login")
     def func_login():
