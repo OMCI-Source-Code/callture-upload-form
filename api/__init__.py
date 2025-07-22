@@ -4,12 +4,17 @@ __init__.py
 This module acts as the main flask app, it defines all site routes and implements upload logic from other modules
 
 Routes:
-    root
-    login
-    upload
+    /       - Form page
+    /login  - Login page
+    /upload - Upload process
+
+Usage:
+    python -m flask --app api run
+    python -m flask --app api run --debug   - For update on save
 
 Author: Terry Luan
-Date: 2025-07-
+Created On: 2025-07-??
+Updated: 2025-07-22
 """
 
 from dotenv import load_dotenv
