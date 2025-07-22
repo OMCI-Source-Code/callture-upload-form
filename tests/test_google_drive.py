@@ -1,13 +1,15 @@
 """
 test_flow.py
 
-This module tests all initial callture functions to ensure they function correctly
+This module tests all google drive functions
 
 Test methods:
-    test_upload_login_fail
-    test_upload_login_success
-    test_single_line_upload
-    test_multiple_line_upload
+    test_get_service
+    test_upload_to_drive_new_file
+    test_upload_to_drive_existing_file
+    test_get_drive_folder
+    test_create_folder_path
+    test_upload_df_to_drive_async
 
 Author: Mame Mor Mbacke
 Date: 2025-07-21
