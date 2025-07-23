@@ -1,9 +1,9 @@
 """
 errors.py
 
-This module contains error handler classes used throughout the API
+This module contains error handler classes used throughout the API folder
 
-Functions:
+Classes:
     TransferException
     LoginFailedException
     GetCallException

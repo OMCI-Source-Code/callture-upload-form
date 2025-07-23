@@ -2,6 +2,8 @@
 pandas_utility.py
 
 This module provides utilities for anything pandas related
+It's used to parse Call Logs into Excel form and process a DataFrame by splitting it
+into Day/Month/Years format
 
 Classes:
     PersonRow

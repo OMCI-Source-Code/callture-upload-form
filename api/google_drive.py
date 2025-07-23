@@ -2,6 +2,7 @@
 google_drive.py
 
 This module provides utilities for anything Google Drive related
+It allows the program to access and upload to Google Drive via its API
 
 Functions:
     get_service
