@@ -50,18 +50,7 @@ def post_get_calls(cookies, line_no="All", ext_no="All", date_range=None):
         "DateRange": date_range,
         "Button": "Search",
     }
-    try:
-        req = httpx.post(CALL_LOG_URL, data=form_data, cookies=cookies, timeout=10.0)
-        req.raise_for_status()
-    except httpx.RequestError as e:
-        raise RuntimeError(f"Network error while retrieving call logs: {e}")
-    except httpx.HTTPStatusError as e:
-        raise RuntimeError(f"HTTP error {e.response.status_code}: {e.response.text}")
-
-    content_type = req.headers.get("Content-Type", "")
-    if "audio/mpeg" in content_type or content_type.startswith("audio"):
-        raise RuntimeError("Callture returned an MP3 file")
-
+    req = httpx.post(CALL_LOG_URL, data=form_data, cookies=cookies, timeout=10.0)
     return req
 
 

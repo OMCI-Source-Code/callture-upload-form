@@ -1,3 +1,4 @@
+
 """
 errors.py
 
@@ -25,6 +26,7 @@ class TransferException(Exception):
 
 
 # Cannot login to Callture account
+        
 class LoginFailedException(Exception):
     def __init__(self, message, response=None):
         self.response = response
