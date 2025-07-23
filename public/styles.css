@@ -331,7 +331,50 @@ body {
   transition: 0.35s ease-in;
   max-width: 100%;
 }
+/* Responsive design */
+@media (max-width: 768px) {
+  .form-container {
+    margin: 10px;
+    border-radius: 8px;
+  }
 
+  .form-container h1 {
+    font-size: 1.8em;
+    padding: 20px;
+  }
+
+  .form-section {
+    padding: 20px;
+  }
+
+  .date-inputs {
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+
+  .form-section:nth-child(2) .input-group {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .form-section:nth-child(2) .input-group label {
+    flex: none;
+    margin-bottom: 8px;
+  }
+
+  .checkbox-group {
+    grid-template-columns: 1fr;
+  }
+
+  .checkbox-controls {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .control-btn {
+    width: 150px;
+  }
+}
 
 /* loading screen (shown on submit) */
 
@@ -396,7 +439,7 @@ body {
  }
 
 /* mobile-specific CSS */
-@media (width <= 600px) { /* NEED TO FIX */
+@media (width > 200px) and (width < 800px) { /* NEED TO FIX */
   body {
     padding: 10px;
   }
@@ -434,4 +477,3 @@ body {
     padding: 8px;
   }
 }
-
