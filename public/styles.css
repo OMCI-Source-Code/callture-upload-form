@@ -27,6 +27,7 @@ body {
   color: black;
 }
 
+
 /* Container */
 .form-container {
   max-width: 800px;
@@ -39,7 +40,8 @@ body {
 }
 
 .login-container {
-  max-width: 800px;
+  max-width: 80%;
+  font-size: 2.3em;
   margin: 4px auto;
   background: #0a0a0a;
   border-radius: 1.25rem;
@@ -416,7 +418,8 @@ body {
 
 /* specific to msg template */
  .content{
-  font-size: larger;
+   font-size: 2.1em;
+   padding: 8px;
    color: white;
    color: white;
    display: flex;
@@ -425,10 +428,13 @@ body {
 }
 
  .inner-content{
+
+   font-size: 2.1em;
    border: 2px solid white;
    border-radius: 8px;
    background-color: #555555;
    padding: 8px;
+
  }
  .content a:visited{
    color: #d9ae4c;
@@ -439,41 +445,3 @@ body {
  }
 
 /* mobile-specific CSS */
-@media (width > 200px) and (width < 800px) { /* NEED TO FIX */
-  body {
-    padding: 10px;
-  }
-
-  .login-container{
-    font-size: 2em !important;
-  }
-
-  .login-container h1 {
-    font-size: 1.5em;
-  }
-
-  .form-container h1 {
-    font-size: 1.5em;
-  }
-
-  .form-section {
-    padding: 15px;
-  }
-
-  .checkbox-item {
-    padding: 10px;
-  }
-
-  .submit-btn {
-    width: 100%;
-    min-width: auto;
-  }
-
-  .checkbox-controls{
-    flex-direction: row;
-  }
-  .alert{
-    font-size: 2.5em !important;
-    padding: 8px;
-  }
-}
