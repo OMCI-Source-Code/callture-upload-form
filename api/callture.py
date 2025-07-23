@@ -66,6 +66,7 @@ async def download_recording(recording: PersonRow):
     recording_id = recording.CDRID
     curr_file_url = DOWNLOAD_URL + str(line_number) + "&FileID=" + str(recording_id)
     print(f"Downloading {recording.CDRID} from {line_number}")
+    req = None
     try:
         async with httpx.AsyncClient() as client:
             req = await client.get(curr_file_url, timeout=100.0)
