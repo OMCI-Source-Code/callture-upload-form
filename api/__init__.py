@@ -1,5 +1,7 @@
 from dotenv import load_dotenv
-from flask import Flask, jsonify, request, send_from_directory
+from flask import Flask, jsonify, request, send_from_directory, redirect, render_template
+import flask_login
+import os
 from flask_cors import CORS
 
 from api.callture import post_download_calls, post_get_calls, post_login
@@ -10,17 +12,52 @@ from api.errors import (TransferException, DownloadCallException, GetCallExcepti
 
 
 def create_app():
-    app = Flask(__name__, static_folder="../public", static_url_path="")
+    app = Flask(__name__, static_folder="../public", static_url_path="", template_folder="../templates")
     CORS(app)
     load_dotenv()
+
+    app.secret_key = os.environ.get("SECRET_KEY")
+
+    login_manager = flask_login.LoginManager()
+    login_manager.init_app(app)
+
+    class User(flask_login.UserMixin):
+        def __init__(self, username, password):
+            self.id = username
+            self.password = password
+
+    users = {
+        os.environ.get("SITE_USERNAME"): User(
+            os.environ.get("SITE_USERNAME"), os.environ.get("SITE_PASSWORD")
+        )
+    }
+
+    @login_manager.user_loader
+    def user_loader(id):
+        return users.get(id)
+
+    @app.get("/login")
+    def login():
+        return send_from_directory(app.static_folder, "login.html")
+
+    @app.post("/login")
+    def func_login():
+        user = users.get(request.form["username"])
+
+        if user is None or user.password != request.form["password"]:
+            return redirect("login")
+
+        flask_login.login_user(user)
+        return redirect("/")
 
     @app.route("/")
     def form():
         return send_from_directory(app.static_folder, "index.html")
 
-    @app.route("/login", methods=["POST"])
-    def login():
-        pass
+    @app.route("/logout")
+    def logout():
+        flask_login.logout_user()
+        return render_template("msg_logout.html")
 
     @app.route("/upload", methods=["POST"])
     def upload():
