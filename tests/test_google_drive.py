@@ -11,6 +11,9 @@ Test methods:
     test_create_folder_path
     test_upload_df_to_drive_async
 
+Usage:
+    Run with pytest -v
+
 Author: Mame Mor Mbacke
 Date: 2025-07-21
 """

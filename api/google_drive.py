@@ -1,3 +1,23 @@
+import asyncio
+import json
+import os
+import traceback
+import warnings
+from collections import defaultdict
+from datetime import datetime, timedelta
+from io import BytesIO
+
+import pandas as pd
+from aiogoogle import Aiogoogle
+from aiogoogle.auth.creds import ServiceAccountCreds
+from google.oauth2 import service_account
+from googleapiclient.discovery import build
+from googleapiclient.errors import HttpError
+from googleapiclient.http import MediaIoBaseUpload
+
+from api.callture import download_recording
+from api.errors import TransferException
+
 """
 google_drive.py
 
@@ -18,25 +38,6 @@ Author: Terry Luan
 Date: 2025-07-14
 """
 
-import asyncio
-import json
-import os
-import traceback
-import warnings
-from collections import defaultdict
-from datetime import datetime, timedelta
-from io import BytesIO
-
-import pandas as pd
-from aiogoogle import Aiogoogle
-from aiogoogle.auth.creds import ServiceAccountCreds
-from google.oauth2 import service_account
-from googleapiclient.discovery import build
-from googleapiclient.errors import HttpError
-from googleapiclient.http import MediaIoBaseUpload
-
-from api.callture import download_recording
-from api.errors import TransferException
 
 # from api.callture import a_download_recording
 from api.pandas_utility import PersonRow

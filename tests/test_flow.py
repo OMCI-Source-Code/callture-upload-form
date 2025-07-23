@@ -9,6 +9,8 @@ Test methods:
     test_single_line_upload
     test_multiple_line_upload
 
+Usage:
+    Run with pytest -v
 Author: Mame Mor Mbacke
 Date: 2025-07-21
 """
@@ -32,7 +34,7 @@ class TestUpload(unittest.TestCase):
         self.app = create_app().test_client()
 
     @patch("api.post_login")
-    def test_upload_login_fail(self, fake_login):
+    def test_upload_callture_login_fail(self, fake_login):
         test_response = MagicMock()
         test_response.status_code = 500
         test_response.json.return_value = {"error": "Login failed!"}
@@ -48,7 +50,7 @@ class TestUpload(unittest.TestCase):
 
     @patch("api.post_login")
     @patch("api.post_get_calls")
-    def test_upload_login_success(self, fake_login, fake_get_calls):
+    def test_upload_callture_login_success(self, fake_login, fake_get_calls):
         test_response = MagicMock()
         test_response.status_code = 302
         fake_login.return_value = test_response

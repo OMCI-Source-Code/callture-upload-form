@@ -1,3 +1,9 @@
+from io import BytesIO
+from typing import NamedTuple
+
+import pandas as pd
+from httpx import Response
+
 """
 pandas_utility.py
 
@@ -15,12 +21,6 @@ Functions:
 Author: Terry Luan
 Created On: 2025-07-14
 """
-
-from io import BytesIO
-from typing import NamedTuple
-
-import pandas as pd
-from httpx import Response
 
 
 class PersonRow(NamedTuple):

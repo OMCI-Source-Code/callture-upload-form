@@ -10,6 +10,9 @@ Test methods:
     test_parse_exception
     test_download_calls
 
+Usage:
+    Run with pytest -v
+
 Author: Mame Mor Mbacke
 Date: 2025-07-17
 """
@@ -27,12 +30,16 @@ class TestLogin(unittest.TestCase):
 
     @patch("api.post_login")
     @patch.dict(
-        os.environ, {"CALLTURE_USERNAME": "fakeusername", "PASS": "wibblywobbly"}
+        os.environ,
+        {
+            "USERNAME": "Aero123@gmail.com",
+            "PASSWORD": "123456",
+        },  # Setting environment variables with incorrect creds to test unsuccessful login
     )
-    def test_fail(self, fake_login):
+    def test_callture_login_fail(self, mock_login):
         test_response = MagicMock()
         test_response.status_code != 302
-        fake_login.return_value = test_response
+        mock_login.return_value = test_response
 
         response = post_login()
         print(response.status_code)
@@ -40,10 +47,10 @@ class TestLogin(unittest.TestCase):
         self.assertNotEqual(response.status_code, 302)
 
     @patch("api.post_login")
-    def test_success(self, fake_login):
+    def test_callture_login_success(self, mock_login):
         test_response = MagicMock()
         test_response.status_code = 302
-        fake_login.return_value = test_response
+        mock_login.return_value = test_response
         response = post_login()
 
         self.assertEqual(response.status_code, 302)

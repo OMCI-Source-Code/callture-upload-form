@@ -9,6 +9,9 @@ Test methods:
     test_download_call_exception
     test_parse_exception
 
+Usage:
+    Run with pytest -v
+
 Author: Mame Mor Mbacke
 Date: 2025-07-21
 """
@@ -35,7 +38,7 @@ class TestCallErrorHandling(unittest.TestCase):
     @patch.dict(
         os.environ, {"CALLTURE_USERNAME": "fakeusername", "PASS": "wibblywobbly"}
     )
-    def test_login_failed_exception(self, fake_login):
+    def test_callture_login_failed_exception(self, fake_login):
         mock_response = MagicMock()
         mock_response.status_code = 401
         fake_login.return_value = mock_response
@@ -65,7 +68,7 @@ class TestCallErrorHandling(unittest.TestCase):
                 raise LoginFailedException("Login failed!", req)
 
             cookies = req.cookies
-            req = post_get_calls(cookies, "All", "All", "07 Jul 2025 - 10 Jul 2025")
+            req = post_get_calls(cookies, "All", "All", "some-date")
             if req.status_code != 200:
                 raise GetCallException("Cannot retrieve call logs from Callture,", req)
 
@@ -100,7 +103,9 @@ class TestCallErrorHandling(unittest.TestCase):
     @patch("api.parse_req_to_df")
     @patch("api.post_download_calls")
     @patch("api.post_get_calls")
-    def test_parse_exception(self, fake_get_calls, fake_download_calls, fake_parse):
+    def test_parse_to_excel_exception(
+        self, fake_get_calls, fake_download_calls, fake_parse
+    ):
         get_calls_response = MagicMock()
         get_calls_response.status_code = 200
         fake_get_calls.return_value = get_calls_response
