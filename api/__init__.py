@@ -8,7 +8,7 @@ Routes:
     /login  - Login page
     /upload - Upload process
 
-Usage:
+How to run:
     python -m flask --app api run
     python -m flask --app api run --debug   - For update on save
 

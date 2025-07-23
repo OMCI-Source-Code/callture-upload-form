@@ -19,20 +19,20 @@ Updated: 2025-07-14
 
 import os
 from datetime import datetime
-
+from api.errors import GetCallException
 import httpx
 
 from api.pandas_utility import PersonRow
 
 LOGIN_URL = "https://users.fibrehub.org/clnt"
 CALL_LOG_URL = "https://users.fibrehub.org/clnt/Call/Logs"
-DOWNLOAD_URL = f"https://users.fibrehub.org/FileHandler/downloadfile?TypeID=4&ClientID={os.environ.get('CALLTURE_CLIENT_ID')}&LineNo="
+DOWNLOAD_URL = f"https://users.fibrehub.org/FileHandler/downloadfile?TypeID=4&ClientID={os.environ.get('8477293')}&LineNo="
 
 
 def post_login():
     headers = {}
     form_data = {
-        "UserName": os.environ.get("USERNAME"),
+        "UserName": os.environ.get("CALLTURE_USERNAME"),
         "Password": os.environ.get("PASSWORD"),
     }
     req = httpx.post(LOGIN_URL, data=form_data, headers=headers, timeout=10.0)
@@ -50,6 +50,7 @@ def post_get_calls(cookies, line_no="All", ext_no="All", date_range=None):
         "DateRange": date_range,
         "Button": "Search",
     }
+
     req = httpx.post(CALL_LOG_URL, data=form_data, cookies=cookies, timeout=10.0)
     return req
 
