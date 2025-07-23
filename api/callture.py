@@ -49,6 +49,7 @@ def post_get_calls(cookies, line_no="All", ext_no="All", date_range=None):
         "DateRange": date_range,
         "Button": "Search",
     }
+
     req = httpx.post(CALL_LOG_URL, data=form_data, cookies=cookies, timeout=10.0)
     return req
 
@@ -61,10 +62,10 @@ def post_download_calls(cookies):
 
 
 async def download_recording(recording: PersonRow):
+    print(f"Downloading {recording.CDRID}")
     line_number = recording.Line_No
     recording_id = recording.CDRID
     curr_file_url = DOWNLOAD_URL + str(line_number) + "&FileID=" + str(recording_id)
-    print(f"Downloading {recording.CDRID} from {line_number}")
     try:
         async with httpx.AsyncClient() as client:
             req = await client.get(curr_file_url, timeout=100.0)
