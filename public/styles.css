@@ -75,10 +75,12 @@ input:focus-within {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  gap: 8px;
 }
 
 .input-group label {
   font-weight: 500;
+  color: #f8f9fa;
   color: #f8f9fa;
   font-size: 1.005em;
 }
@@ -146,6 +148,7 @@ input:focus-within {
   margin-bottom: 0;
 }
 /*
+/*
 .browse-btn {
   background: #ffffff;
   color: #555555;
@@ -166,6 +169,8 @@ input:focus-within {
   color: #ffffff;
   border-color: #555555;
 }
+
+*/
 
 */
 
@@ -268,7 +273,44 @@ input:focus-within {
 .submit-btn:active {
   transform: translateY(0);
 }
+.submit-btn.hide {
+  pointer-events: none;
+  display: none;
+}
 
+
+/* Modal container */
+.modal-popup {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgb(28, 27, 27);
+  border: 2px solid #D9AE4C;
+  opacity: 0;
+  pointer-events: none;
+  color: white;
+  margin: auto;
+  width: 50%;
+  max-width: 100%;
+  height: 40px;
+  max-height: 100px;
+  position: sticky;
+  bottom: 20px;
+  transition: opacity 0.35s ease-in, transform 0.35s;
+}
+
+.modal-popup:hover {
+  transform: scale(1.1);
+}
+.modal-popup.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.modal {
+  transition: 0.35s ease-in;
+  max-width: 100%;
+}
 /* Responsive design */
 @media (max-width: 768px) {
   .form-container {
@@ -338,6 +380,7 @@ input:focus-within {
   border-top-color: #d9ae4c;
   border-left-color: #d9ae4c;
   animation: spin 1s infinite ease-in;
+  pointer-events: none;
 }
 
 @keyframes spin {
@@ -349,7 +392,7 @@ input:focus-within {
     transform: rotate(360deg);
   }
   
-  
+} 
 /* mobile-specific CSS */  
 @media (max-width: 480px) {
   body {
@@ -372,6 +415,4 @@ input:focus-within {
     width: 100%;
     min-width: auto;
   }
-}
-
 }

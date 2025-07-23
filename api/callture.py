@@ -1,7 +1,7 @@
 """
 callture.py
 
-This module provides utilities for anything Callture related
+This module provides utilities for anything Callture related and error handling for incorrect return values
 
 Functions:
     post_login
@@ -13,12 +13,13 @@ Misc variables:
 
 
 Author: Terry Luan
-Date: 2025-07-14
+Created On: 2025-07-14
+Updated: 2025-07-14
 """
 
 import os
 from datetime import datetime
-
+from api.errors import GetCallException
 import httpx
 
 from api.pandas_utility import PersonRow
@@ -49,8 +50,18 @@ def post_get_calls(cookies, line_no="All", ext_no="All", date_range=None):
         "DateRange": date_range,
         "Button": "Search",
     }
+    try:
+        req = httpx.post(CALL_LOG_URL, data=form_data, cookies=cookies, timeout=10.0)
+        req.raise_for_status()
+    except httpx.RequestError as e:
+        raise RuntimeError(f"Network error while retrieving call logs: {e}")
+    except httpx.HTTPStatusError as e:
+        raise RuntimeError(f"HTTP error {e.response.status_code}: {e.response.text}")
 
-    req = httpx.post(CALL_LOG_URL, data=form_data, cookies=cookies, timeout=10.0)
+    content_type = req.headers.get("Content-Type", "")
+    if "audio/mpeg" in content_type or content_type.startswith("audio"):
+        raise RuntimeError("Callture returned an MP3 file")
+
     return req
 
 
@@ -61,20 +72,12 @@ def post_download_calls(cookies):
     return req
 
 
-def download_recording(recording: PersonRow):
-    print(f"Downloading {recording.CDRID}")
+async def download_recording(recording: PersonRow):
     line_number = recording.Line_No
     recording_id = recording.CDRID
     curr_file_url = DOWNLOAD_URL + str(line_number) + "&FileID=" + str(recording_id)
-    req = httpx.get(curr_file_url, timeout=10.0)
-    return req
-
-
-async def a_download_recording(recording: PersonRow):
-    print(f"Downloading {recording.CDRID}")
-    line_number = recording.Line_No
-    recording_id = recording.CDRID
-    curr_file_url = DOWNLOAD_URL + str(line_number) + "&FileID=" + str(recording_id)
+    print(f"Downloading {recording.CDRID} from {line_number}")
+    req = None
     try:
         async with httpx.AsyncClient() as client:
             req = await client.get(curr_file_url, timeout=100.0)

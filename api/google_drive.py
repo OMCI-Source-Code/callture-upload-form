@@ -2,6 +2,7 @@
 google_drive.py
 
 This module provides utilities for anything Google Drive related
+It allows the program to access and upload to Google Drive via its API
 
 Functions:
     get_service
@@ -20,6 +21,7 @@ Date: 2025-07-14
 import asyncio
 import json
 import os
+import traceback
 import warnings
 from collections import defaultdict
 from datetime import datetime, timedelta
@@ -32,11 +34,10 @@ from google.oauth2 import service_account
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from googleapiclient.http import MediaIoBaseUpload
-import traceback
 
+from api.callture import download_recording
 from api.errors import TransferException
 
-from api.callture import a_download_recording, download_recording
 # from api.callture import a_download_recording
 from api.pandas_utility import PersonRow
 
@@ -59,77 +60,11 @@ def get_service():
     return service
 
 
-def upload_to_drive(
-    recording, object_bytes: bytes, root_id=os.environ.get("ROOT_FOLDER_ID")
-):
-    print(f"Uploading {recording.CDRID}")
-    recording_id = recording.CDRID
-
-    # For some reason, when downloading from the new interface, it does not include the extension number
-    # name = "_".join(recording.Time.split()[::-1]) + "_" + str(recording.Line_No) + "_" + str(recording.Ext_No) + "_" + str(recording_id)
-    name = (
-        "_".join(recording.Time.split()[::-1])
-        + "_"
-        + str(recording.Line_No)
-        + "_"
-        + str(recording_id)
-    )
-    description = "\n".join(
-        [
-            f"{field}: {getattr(recording, field)}"
-            for field in recording._fields[1:]
-            if field not in ["Year", "Month", "Day"]
-        ]
-    )
-    mime_type = "audio/mpeg"
-
-    object_stream = BytesIO(object_bytes)
-
-    try:
-        service = get_service()
-        response = (
-            service.files().list(
-                q=f"name = '{name}' and '{root_id}' in parents and trashed = false",
-                spaces="drive",
-                fields="files(id, name)",
-                supportsAllDrives=True,
-                includeItemsFromAllDrives=True,
-            )
-            .execute()
-        )
-
-        if response.get("files"):
-            print(f"File '{name}' already exists in Drive. Skipping upload.")
-            return response["files"][0]["id"]
-        
-        file_metadata = {"name": name, "parents": [root_id], "description": description}
-        media_stream = MediaIoBaseUpload(
-            object_stream, mimetype=mime_type, resumable=True
-        )
-        # pylint: disable=maybe-no-member
-        file = (
-            service.files()
-            .create(
-                body=file_metadata,
-                media_body=media_stream,
-                fields="id",
-                supportsAllDrives=True,
-            )
-            .execute()
-        )
-
-    except HttpError as error:
-        print(f"An error occurred: {error}")
-        file = None
-
-    return file.get("id")
-
-
-async def a_upload_to_drive(
+async def upload_to_drive(
     recording, object_bytes: bytes, root_id=os.environ.get("ROOT_FOLDER_ID")
 ):
     recording_id = recording.CDRID
-
+    recording_status = recording.Status
     # For some reason, when downloading from the new interface, it does not include the extension number
     # name = "_".join(recording.Time.split()[::-1]) + "_" + str(recording.Line_No) + "_" + str(recording.Ext_No) + "_" + str(recording_id)
     name = (
@@ -153,9 +88,27 @@ async def a_upload_to_drive(
     try:
         async with Aiogoogle(service_account_creds=creds) as aiogoogle:
             service = await aiogoogle.discover("drive", "v3")
+
+            # Finds folder of recording_status to put the file into
+            folder = await aiogoogle.as_service_account(
+                service.files.list(
+                    q=f"name = '{recording_status}' and '{root_id}' in parents and trashed = false and mimeType = 'application/vnd.google-apps.folder'",
+                    fields="files(id, name)",
+                    supportsAllDrives=True,
+                    includeItemsFromAllDrives=True,
+                )
+            )
+            if folder["files"]:
+                status_folder_id = folder["files"][0]["id"]
+            else:
+                print(
+                    f"Warning: Folder '{recording_status}' was not found in root so uploading file to root instead"
+                )
+                status_folder_id = root_id
+            # Checks if the recording already exists in folder location
             find_dupe = await aiogoogle.as_service_account(
                 service.files.list(
-                    q=f"name = '{name}' and '{root_id}' in parents and trashed = false",
+                    q=f"name = '{name}' and '{status_folder_id}' in parents and trashed = false",
                     spaces="drive",
                     fields="files(id, name)",
                     supportsAllDrives=True,
@@ -165,10 +118,10 @@ async def a_upload_to_drive(
             if find_dupe["files"]:
                 print(f"File '{name}' already exists in drive. Skipping upload.")
                 return
-            print(f"Uploading {recording.CDRID}")
+            print(f"Uploading {recording.CDRID} to {recording_status}")
             file_metadata = {
                 "name": name,
-                "parents": [root_id],
+                "parents": [status_folder_id],
                 "description": description,
                 "mimeType": mime_type,
             }
@@ -367,47 +320,55 @@ def setup_date_folders(
         day_id_map[current_year][current_month][current_day] = folder["id"]
         current_date += timedelta(days=1)
 
+        # Creates folders that will hold the recordings by status inside the date folders that are made for better sorting
+        day_folder_id = day_id_map[current_year][current_month][current_day]
+        recording_status_names = [
+            "Answered",
+            "Caller Hangup",
+            "Dial Out",
+            "Dial Out-X",
+            "Voice Mail",
+            "Missed Call",
+        ]
+        for recording_status in recording_status_names:
+            folder = get_drive_folder(recording_status, day_folder_id)
+            if not folder:
+                folder = create_folder(recording_status, day_folder_id)
+            elif len(folder) != 1:
+                warnings.warn(
+                    f"WARNING - Day: There are multiple folders under the parent folder {month_folder_id} with name {current_day}."
+                )
+
     return day_id_map
 
 
 def upload_df_to_drive(
     df: pd.DataFrame,
     day_id_map: dict[str, dict[str, dict[str, str]]],
-    async_enabled: bool = False,
 ):
-    if async_enabled:
-        asyncio.run(_upload_df_async(df, day_id_map))
-    else:
-        _upload_df_sync(df, day_id_map)
-
-
-def _upload_df_sync(df, day_id_map):
-    print("Starting to Upload Sync")
-    for recording in df.itertuples():
-        day_folder_id = day_id_map[recording.Year][recording.Month][recording.Day]
-        req = download_recording(recording)
-        upload_to_drive(recording, req.content, day_folder_id)
+    asyncio.run(_upload_df_async(df, day_id_map))
 
 
 async def _upload_df_async(
     df: pd.DataFrame,
     day_id_map: dict[str, dict[str, dict[str, str]]],
-    use_semaphore: bool = False,
 ):
     callture_semaphore = asyncio.Semaphore(
         int(os.environ.get("CALLTURE_DOWNLOAD_LIMIT", 30))
     )
-    google_semaphore = asyncio.Semaphore(int(os.environ.get("GOOGLE_UPLOAD_LIMIT", 100)))
+    google_semaphore = asyncio.Semaphore(
+        int(os.environ.get("GOOGLE_UPLOAD_LIMIT", 100))
+    )
 
     print("Starting to Upload Async")
-    
+
     task_states: list[TransferException | None] = await asyncio.gather(
         *(
             transfer_file(
                 recording,
                 day_id_map[recording.Year][recording.Month][recording.Day],
                 callture_semaphore,
-                google_semaphore
+                google_semaphore,
             )
             for recording in df.itertuples()
         ),
@@ -418,12 +379,21 @@ async def _upload_df_async(
         print("The following errors occured")
         for e in errors:
             print(e)
-        raise TransferException(f"File Transfer Error: file(s) with id's: {[e.recording_id for e in errors]} could not be transferred. Please refer to logs for more details")
-async def transfer_file(recording: PersonRow, day_folder_id: str, callture_semaphore: asyncio.Semaphore, google_semaphore: asyncio.Semaphore):
+        raise TransferException(
+            f"File Transfer Error: file(s) with id's: {[e.recording_id for e in errors]} could not be transferred. Please refer to logs for more details"
+        )
+
+
+async def transfer_file(
+    recording: PersonRow,
+    day_folder_id: str,
+    callture_semaphore: asyncio.Semaphore,
+    google_semaphore: asyncio.Semaphore,
+):
     try:
         async with callture_semaphore:
-            req = await a_download_recording(recording)
+            req = await download_recording(recording)
         async with google_semaphore:
-            await a_upload_to_drive(recording, req.content, day_folder_id)
+            await upload_to_drive(recording, req.content, day_folder_id)
     except Exception as e:
         raise TransferException(traceback.format_exc(), recording.CDRID) from e

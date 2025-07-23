@@ -45,15 +45,37 @@ document
     .getElementById("dataForm")
     .addEventListener("submit", async function (e) {
         e.preventDefault();
+        const modal_popup = document.getElementById("modal_popup");
+        const submit_btn = document.getElementById("submit-btn");
+        
         const formData = new FormData(this);
 
-        const fromDate = formData.get("fromDate");
+        const fromDateStr = formData.get("fromDate");
+        const [fromYear,fromMonth,fromDay] = fromDateStr.split("-").map(Number);
+        const fromDate = new Date(fromYear,fromMonth-1,fromDay)
         // const fromTime = formData.get("fromTime");
         const fromTime = "00:00"
-        const toDate = formData.get("toDate");
+        const toDateStr = formData.get("toDate");
+        const [toYear,toMonth,toDay] = toDateStr.split("-").map(Number);
+        const toDate = new Date(toYear,toMonth-1,toDay)
         const toTime = "23:59"
         // const toTime = formData.get("toTime");
         const selectedNumbers = [];
+        if (isNaN(fromDate.getTime()) || isNaN(toDate.getTime())) {
+            modal_popup.textContent = "Invalid date(s) provided"
+            setTimeout(() => { modal_popup.classList.remove('show'); }, "1500");
+            setTimeout(() => { modal_popup.textContent = `Error: Invalid dates provided`; modal_popup.classList.add('show'); }, "2000");
+            setTimeout(() => { modal_popup.classList.remove('show'); }, "10000");
+            throw new Error(`Error: Invalid dates provided`)
+        }
+        else if (toDate < fromDate) {
+            modal_popup.textContent = "Invalid Date range: 'To' date must be after 'From' date"
+            console.log("hello")
+            setTimeout(() => { modal_popup.classList.remove('show'); }, "1500");
+            setTimeout(() => { modal_popup.textContent = `Error: Invalid Date range: 'To' date must be after 'From' date`; modal_popup.classList.add('show'); }, "2000");
+            setTimeout(() => { modal_popup.classList.remove('show'); }, "10000");
+            throw new Error(`Invalid Date range: 'To' date must be after 'From' date`)
+        }
 
         const dateRange = formatDate(fromDate, fromTime) + ' - ' + formatDate(toDate, toTime);
         // Get all checked contacts
@@ -66,9 +88,12 @@ document
             dateRange: dateRange,
             lineNo: selectedNumbers,
         }
+        modal_popup.textContent = "Uploading...";
+        modal_popup.classList.add('show');
 
         try {
             document.getElementById("loader").style.display = "flex";
+            submit_btn.classList.add('hide');
 
             const response = await fetch('http://localhost:5000/upload', {
                 method: 'POST',
@@ -80,20 +105,32 @@ document
 
             if (!response.ok) {
                 const data = await response.json()
+                console.log(response);
+                modal_popup.textContent = "Upload failed!"
+                setTimeout(() => { modal_popup.classList.remove('show'); }, "1500");
+                setTimeout(() => { modal_popup.textContent = `Error ${response.status}: ${data.error}`; modal_popup.classList.add('show'); }, "2000");
+                setTimeout(() => { modal_popup.classList.remove('show'); }, "10000");
                 throw new Error(`${response.status}: ${data.message}`)
             }
 
-            alert(`Successfully uploaded to drive!`);
+            modal_popup.classList.remove('show');
+            setTimeout(() => { modal_popup.textContent = "Upload completed successfully!"; modal_popup.classList.add('show'); }, "500");
+            setTimeout(() => { modal_popup.classList.remove('show'); }, "7000");
         } catch (exception) {
             console.error(exception);
-            if(confirm(`Error: ${exception.message || exception} Would you like to try again?`)){
-			var restart_pending = true;
-			}
-			
+            setTimeout(() => {
+                if (confirm(`Error: Would you like to try again?`)) {
+                    var restart_pending = true;
+                    modal_popup.classList.remove('show');
+                    if(restart_pending){document.getElementById("submit-btn").click(); restart_pending = false;}
+                };
+            }, "2350");
+            setTimeout(() => { modal_popup.classList.remove('show'); }, "6500");
+          
         } finally {
             document.getElementById("loader").style.display = "none";
+            submit_btn.classList.remove('hide');
         }
 		
-		if(restart_pending){document.getElementById("submit-btn").click(); restart_pending = false;} //restart process by clicking submit btn for user
 
     });
