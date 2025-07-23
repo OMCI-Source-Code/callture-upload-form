@@ -86,7 +86,7 @@ class TestDrive(unittest.TestCase):
 
         result = upload_to_drive(MockRecording, b"audio-bytes", root_id="root123")
 
-        self.assertEqual(result, "file123")
+        self.assertEqual(result, mock_files)
         mock_files.list.assert_called_once()
         mock_files.create.assert_called_once()
 
@@ -122,12 +122,12 @@ class TestDrive(unittest.TestCase):
         mock_get_service.return_value = fake_service
 
         fake_service.files().list().execute.return_value = {
-            "files": [{"id": "folder123", "name": "TestFolder"}]
+            "files": [{"id": "123455", "name": "TestFolder"}]
         }
 
         results = get_drive_folder(name="TestFolder", root_id="root123")
 
-        self.assertEqual(results, [{"id": "folder123", "name": "TestFolder"}])
+        self.assertEqual(results, [{"id": "123455", "name": "TestFolder"}])
         mock_get_service.assert_called_once()
 
     # Test creating a new folder in the Google Drive ----------------------------------
@@ -139,13 +139,13 @@ class TestDrive(unittest.TestCase):
         mock_get_service.return_value = fake_service
 
         fake_service.files().create().execute.return_value = {
-            "id": "new-folder-id",
+            "id": "123456",
             "name": "MyFolder",
         }
 
         result = create_folder("MyFolder", parent_id="root123")
 
-        self.assertEqual(result["id"], "new-folder-id")
+        self.assertEqual(result["id"], "123456")
         self.assertEqual(result["name"], "MyFolder")
 
     # Test creating a path of folders in the Google Drive. I.e. 2025/07/... or 2025/09/... ----------------------------------
@@ -173,6 +173,6 @@ class TestDrive(unittest.TestCase):
         df = pd.DataFrame({"col": [1, 2]})
         day_id_map = {}
 
-        upload_df_to_drive(df, day_id_map, async_enabled=True)
+        upload_df_to_drive(df, day_id_map)
 
         mock_async_run.assert_called_once()

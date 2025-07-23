@@ -18,7 +18,6 @@ import unittest
 import os
 from unittest.mock import patch, MagicMock
 from api import post_login, create_app, post_get_calls, post_download_calls
-from api.callture import a_download_recording, download_recording
 
 
 class TestLogin(unittest.TestCase):

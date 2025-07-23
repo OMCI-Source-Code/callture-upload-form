@@ -24,7 +24,7 @@ from api import (
     post_download_calls,
     setup_date_folders,
 )
-from api.callture import a_download_recording, download_recording
+from api.callture import download_recording
 from api.google_drive import upload_df_to_drive
 from api.pandas_utility import parse_req_to_df, process_df
 
@@ -44,10 +44,7 @@ class TestUpload(unittest.TestCase):
         response = self.app.post("/login")
         self.assertEqual(response.status_code, 500)
 
-        response = self.app.post(
-            "/upload",
-            json={"lineNo": "12345678", "dateRange": "2000-01-01 to 2025-12-31"},
-        )
+        response = self.app.post("/upload", json={"lineNo": "All", "dateRange": "All"})
 
         self.assertEqual(response.status_code, 500)
         self.assertIn("Login failed", response.get_data(as_text=True))
