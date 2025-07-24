@@ -5,6 +5,10 @@
 {% endblock %}
 
 {% block content %}
-    <div class="alert"> Please <a href="/login"> log in</a> in order to view this content. </div>
+    <div class="alert"> Please <button href="/login"
+                                       id="login-btn"
+                                       class="login-btn"
+                                       onclick="location.href='/login'"
+    > log in</button> in order to view this content. </div>
     </br>
 {% endblock %}
