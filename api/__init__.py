@@ -1,3 +1,22 @@
+"""
+__init__.py
+
+This module acts as the main flask app, it defines all site routes and implements upload logic from other modules
+
+Routes:
+    /       - Form page
+    /login  - Login page
+    /upload - Upload process
+
+How to run:
+    python -m flask --app api run
+    python -m flask --app api run --debug   - For update on save
+
+Author: Terry Luan
+Created On: 2025-07-??
+Updated: 2025-07-22
+"""
+
 from dotenv import load_dotenv
 from flask import Flask, jsonify, request, send_from_directory, redirect, render_template
 import flask_login
