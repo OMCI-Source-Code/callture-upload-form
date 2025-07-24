@@ -62,6 +62,7 @@ def create_app():
         flask_login.logout_user()
         return render_template("msg_logout.html")
 
+    @flask_login.login_required
     @app.route("/upload", methods=["POST"])
     def upload():
         def json_error_check(req):
