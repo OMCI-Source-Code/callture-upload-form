@@ -3,6 +3,7 @@ from flask import Flask, jsonify, request, send_from_directory, redirect, render
 import flask_login
 import os
 from flask_cors import CORS
+from api.user import User
 
 from api.callture import post_download_calls, post_get_calls, post_login
 from api.errors import TransferException
@@ -21,13 +22,8 @@ def create_app():
     login_manager = flask_login.LoginManager()
     login_manager.init_app(app)
 
-    class User(flask_login.UserMixin):
-        def __init__(self, username, password):
-            self.id = username
-            self.password = password
-
     users = {
-        os.environ.get("SITE_USERNAME"): User(
+        os.environ.get("SITE_USERNAME"): user.User(
             os.environ.get("SITE_USERNAME"), os.environ.get("SITE_PASSWORD")
         )
     }
