@@ -40,6 +40,15 @@ def create_app():
     def login():
         return send_from_directory(app.static_folder, "login.html")
 
+    @app.route("/")
+    @flask_login.login_required
+    def form():
+        return send_from_directory(app.static_folder, "index.html")
+
+    @login_manager.unauthorized_handler
+    def unauthorized_handler():
+        return render_template("msg_login_required.html")
+
     @app.post("/login")
     def func_login():
         user = users.get(request.form["username"])
@@ -50,9 +59,7 @@ def create_app():
         flask_login.login_user(user)
         return redirect("/")
 
-    @app.route("/")
-    def form():
-        return send_from_directory(app.static_folder, "index.html")
+
 
     @app.route("/logout")
     def logout():
