@@ -1,7 +1,7 @@
 """
 callture.py
 
-This module provides utilities for anything Callture related
+This module provides utilities for anything Callture related and error handling for incorrect return values
 
 Functions:
     post_login
@@ -13,12 +13,13 @@ Misc variables:
 
 
 Author: Terry Luan
-Date: 2025-07-14
+Created On: 2025-07-14
+Updated: 2025-07-14
 """
 
 import os
 from datetime import datetime
-
+from api.errors import GetCallException
 import httpx
 
 from api.pandas_utility import PersonRow
@@ -65,6 +66,7 @@ async def download_recording(recording: PersonRow):
     recording_id = recording.CDRID
     curr_file_url = DOWNLOAD_URL + str(line_number) + "&FileID=" + str(recording_id)
     print(f"Downloading {recording.CDRID} from {line_number}")
+    req = None
     try:
         async with httpx.AsyncClient() as client:
             req = await client.get(curr_file_url, timeout=100.0)

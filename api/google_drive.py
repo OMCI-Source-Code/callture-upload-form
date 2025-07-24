@@ -1,22 +1,3 @@
-"""
-google_drive.py
-
-This module provides utilities for anything Google Drive related
-
-Functions:
-    get_service
-    upload_to_drive
-    get_drive_folder
-    create_folder_path
-    create_folder
-    setup_date_folders
-    upload_df_to_drive
-    transfer_file
-
-Author: Terry Luan
-Date: 2025-07-14
-"""
-
 import asyncio
 import json
 import os
@@ -36,6 +17,27 @@ from googleapiclient.http import MediaIoBaseUpload
 
 from api.callture import download_recording
 from api.errors import TransferException
+
+"""
+google_drive.py
+
+This module provides utilities for anything Google Drive related
+It allows the program to access and upload to Google Drive via its API
+
+Functions:
+    get_service
+    upload_to_drive
+    get_drive_folder
+    create_folder_path
+    create_folder
+    setup_date_folders
+    upload_df_to_drive
+    transfer_file
+
+Author: Terry Luan
+Date: 2025-07-14
+"""
+
 
 # from api.callture import a_download_recording
 from api.pandas_utility import PersonRow
