@@ -62,7 +62,7 @@ class TestDrive(unittest.TestCase):
     # Testing file uploads for files that DON'T exist ----------------------------------
     @patch("api.google_drive.get_service")
     @patch("api.google_drive.MediaIoBaseUpload")
-    def test_upload_to_drive_new_file(self, mock_media_upload, mock_get_service):
+    async def test_upload_to_drive_new_file(self, mock_media_upload, mock_get_service):
         from api.google_drive import upload_to_drive
 
         # Create a fake call recording object to test functions
@@ -89,7 +89,7 @@ class TestDrive(unittest.TestCase):
 
         mock_media_upload.return_value = MagicMock()
 
-        result = upload_to_drive(MockRecording, b"audio-bytes", root_id="root123")
+        result = await upload_to_drive(MockRecording, b"audio-bytes", root_id="root123")
 
         self.assertEqual(result, mock_files)
         mock_files.list.assert_called_once()
@@ -97,7 +97,7 @@ class TestDrive(unittest.TestCase):
 
     # Testing file uploads for files that DO exist ----------------------------------
     @patch("api.google_drive.get_service")
-    def test_upload_to_drive_existing_file(self, mock_get_service):
+    async def test_upload_to_drive_existing_file(self, mock_get_service):
         from api.google_drive import upload_to_drive
 
         MockRecording = MagicMock()
@@ -113,7 +113,7 @@ class TestDrive(unittest.TestCase):
             "files": [{"id": "1234567890"}]
         }
 
-        result = upload_to_drive(MockRecording, b"audio-bytes", root_id="root123")
+        result = await upload_to_drive(MockRecording, b"audio-bytes", root_id="root123")
 
         self.assertEqual(result, "1234567890")
         fake_service.files().create.assert_not_called()
