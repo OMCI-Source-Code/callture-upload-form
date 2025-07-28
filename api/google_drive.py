@@ -49,7 +49,8 @@ scopes = [
 ]
 
 service_account_key = json.load(open(service_account_file))
-
+status_folder_cache: dict[tuple[str, str], str] = {}
+status_folder_locks: dict[tuple[str, str], asyncio.Lock] = defaultdict(asyncio.Lock)
 creds = ServiceAccountCreds(scopes=scopes, **service_account_key)
 
 
@@ -321,26 +322,29 @@ def setup_date_folders(
         day_id_map[current_year][current_month][current_day] = folder["id"]
         current_date += timedelta(days=1)
 
-        # Creates folders that will hold the recordings by status inside the date folders that are made for better sorting
-        day_folder_id = day_id_map[current_year][current_month][current_day]
-        recording_status_names = [
-            "Answered",
-            "Caller Hangup",
-            "Dial Out",
-            "Dial Out-X",
-            "Voice Mail",
-            "Missed Call",
-        ]
-        for recording_status in recording_status_names:
-            folder = get_drive_folder(recording_status, day_folder_id)
-            if not folder:
-                folder = create_folder(recording_status, day_folder_id)
-            elif len(folder) != 1:
-                warnings.warn(
-                    f"WARNING - Day: There are multiple folders under the parent folder {month_folder_id} with name {current_day}."
-                )
-
     return day_id_map
+
+async def get_or_create_status_folder(recording_status: str, parent_folder_id: str) -> str:
+    key = (parent_folder_id, recording_status)
+    if key in status_folder_cache:
+        return status_folder_cache[key]
+    async with status_folder_locks[key]:
+        if key in status_folder_cache:
+            return status_folder_cache[key]
+
+        folders = await asyncio.to_thread(get_drive_folder, recording_status, parent_folder_id)
+        if not folders:
+            folder = await asyncio.to_thread(create_folder, recording_status, parent_folder_id)
+        elif len(folders) != 1:
+            warnings.warn(
+                f"WARNING - Multiple folders for status '{recording_status}' under folder ID {parent_folder_id}"
+            )
+            folder = folders[0]
+        else:
+            folder = folders[0]
+
+        status_folder_cache[key] = folder["id"]
+        return folder["id"]
 
 
 def upload_df_to_drive(
@@ -392,9 +396,12 @@ async def transfer_file(
     google_semaphore: asyncio.Semaphore,
 ):
     try:
+        recording_status = recording.Status
+        status_folder_id = await get_or_create_status_folder(recording_status, day_folder_id)
+
         async with callture_semaphore:
             req = await download_recording(recording)
         async with google_semaphore:
-            await upload_to_drive(recording, req.content, day_folder_id)
+            await upload_to_drive(recording, req.content, status_folder_id)
     except Exception as e:
         raise TransferException(traceback.format_exc(), recording.CDRID) from e
