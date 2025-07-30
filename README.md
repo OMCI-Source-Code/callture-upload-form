@@ -50,7 +50,7 @@ cp .env.example .env
 Then fill out the .env file. The following variables are required
 
 | **Variable**            | **Description**                                                                            |
-| ----------------------- | ------------------------------------------------------------------------------------------ |
+|-------------------------|--------------------------------------------------------------------------------------------|
 | USERNAME                | Your callture username you use to log in                                                   |
 | PASSWORD                | Your callture password you use to log in                                                   |
 | CALLTURE_CLIENT_ID      | Your Callture client ID                                                                    |
@@ -58,6 +58,9 @@ Then fill out the .env file. The following variables are required
 | DRIVE_ID                | The ID for the shared folder your are uploading to in Google Drive                         |
 | CALLTURE_DOWNLOAD_LIMIT | The maximum amount of files that can be downloaded from Callture at a time. Defaults to 30 |
 | GOOGLE_UPLOAD_LIMIT     | The maximum amount of files that can be uploaded to Google at a time. Defaults to 100.     |
+| SITE_USERNAME           | The username to be used for the upload form                                                |
+| SITE_PASSWORD           | The password to be used for the upload form                                                |
+| SECRET_KEY              | The secret session key for the Flask framework to use (make sure it's secure!)              |
 
 ### 5. Run the Backend
 

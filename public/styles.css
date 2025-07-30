@@ -19,14 +19,30 @@ body {
   background: #d9ae4c;
 }
 
-input:focus-within {
-  color: #d9ae4c;
+.logout{
+  color: white;
 }
+
+.logout:hover{
+  color: black;
+}
+
 
 /* Container */
 .form-container {
   max-width: 800px;
-  margin: 0 auto;
+  margin: 4px auto;
+  background: #0a0a0a;
+  border-radius: 1.25rem;
+  border: 2px solid #d9ae4c;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.login-container {
+  max-width: 80%;
+  font-size: 2.3rem;
+  margin: 1em auto;
   background: #0a0a0a;
   border-radius: 1.25rem;
   border: 2px solid #d9ae4c;
@@ -36,6 +52,16 @@ input:focus-within {
 
 /* Header */
 .form-container h1 {
+  background: #0a0a0a;
+  color: #d9ae4c;
+  padding: 30px 30px 2px 30px;
+  text-align: center;
+  font-size: 1.7rem;
+  font-weight: 600;
+  margin-bottom: 0;
+}
+
+.login-container h1 {
   background: #0a0a0a;
   color: #d9ae4c;
   padding: 30px 30px 2px 30px;
@@ -65,7 +91,7 @@ input:focus-within {
 }
 
 /* Date inputs */
-.date-inputs {
+.date-inputs{
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 20px;
@@ -75,18 +101,17 @@ input:focus-within {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  gap: 8px;
 }
 
 .input-group label {
   font-weight: 500;
   color: #f8f9fa;
-  color: #f8f9fa;
   font-size: 1.005em;
 }
 
 .input-group input[type="date"],
-.input-group input[type="text"] {
+.input-group input[type="password"],
+.input-group input[type="text"]{
   padding: 12px;
   border: 2px solid #ddd;
   border-radius: 8px;
@@ -96,7 +121,8 @@ input:focus-within {
 }
 
 .input-group input[type="date"]:focus,
-.input-group input[type="text"]:focus {
+.input-group input[type="text"]:focus,
+.input-group input[type="password"]:focus{
   outline: none;
   border-color: #d9ae4c;
   box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
@@ -147,9 +173,8 @@ input:focus-within {
   flex: 1;
   margin-bottom: 0;
 }
-/*
-/*
-.browse-btn {
+
+.login-btn {
   background: #ffffff;
   color: #555555;
   border: 2px solid #ddd;
@@ -162,7 +187,7 @@ input:focus-within {
   white-space: nowrap;
 }
 
-.browse-btn:hover {
+.login-btn:hover {
   background: #D9AE4C;
   transform: translateY(-2px);
   box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
@@ -170,9 +195,6 @@ input:focus-within {
   border-color: #555555;
 }
 
-*/
-
-*/
 
 /* Checkbox group */
 .checkbox-group {
@@ -391,28 +413,34 @@ input:focus-within {
   100% {
     transform: rotate(360deg);
   }
-  
-} 
-/* mobile-specific CSS */  
-@media (max-width: 480px) {
-  body {
-    padding: 10px;
-  }
 
-  .form-container h1 {
-    font-size: 1.5em;
-  }
-
-  .form-section {
-    padding: 15px;
-  }
-
-  .checkbox-item {
-    padding: 10px;
-  }
-
-  .submit-btn {
-    width: 100%;
-    min-width: auto;
-  }
 }
+
+/* specific to msg template */
+ .content{
+   padding: 1em;
+   color: white;
+   color: white;
+   display: flex;
+   align-content: center;
+   justify-content: center;
+}
+
+ .inner-content{
+
+   font-size: 2.1em;
+   border: 2px solid white;
+   border-radius: 8px;
+   background-color: #555555;
+   padding: 8px;
+
+ }
+ .content a:visited{
+   color: #d9ae4c;
+ }
+
+ .content a{
+   color: #D9AE4C;
+ }
+
+/* mobile-specific CSS */
