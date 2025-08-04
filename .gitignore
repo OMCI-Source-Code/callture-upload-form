@@ -4,16 +4,15 @@
 __pycache__
 
 # Environments 
-.env 
+.env
+.env.local
 .venv 
 env/ 
 venv/ 
 ENV/ 
 env.bak/ 
-venv.bak/ 
+venv.bak/
+tests/data/*
 
-.env.local
-
-# Dev files
-callture-service-key.json
-CallRecords.xls
+service_account.json
+/.idea

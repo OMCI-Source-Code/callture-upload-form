@@ -5,29 +5,65 @@
   box-sizing: border-box;
 }
 
+/* general stuff o7 */
 body {
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-  background: linear-gradient(135deg, #0A0A0A, #D9AE4C);
+  background: linear-gradient(135deg, #0a0a0a, #d9ae4c);
   min-height: 100vh;
   padding: 20px;
   line-height: 1.6;
 }
 
+::selection {
+  color: black;
+  background: #d9ae4c;
+}
+
+.logout{
+  color: white;
+}
+
+.logout:hover{
+  color: black;
+}
+
+
 /* Container */
 .form-container {
   max-width: 800px;
-  margin: 0 auto;
-  background: #0A0A0A;
+  margin: 4px auto;
+  background: #0a0a0a;
   border-radius: 1.25rem;
-  border: 2px solid #D9AE4C;
+  border: 2px solid #d9ae4c;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.login-container {
+  max-width: 80%;
+  font-size: 2.3rem;
+  margin: 1em auto;
+  background: #0a0a0a;
+  border-radius: 1.25rem;
+  border: 2px solid #d9ae4c;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
   overflow: hidden;
 }
 
 /* Header */
 .form-container h1 {
-  background: #0A0A0A;
-  color: #D9AE4C;
+  background: #0a0a0a;
+  color: #d9ae4c;
+  padding: 30px 30px 2px 30px;
+  text-align: center;
+  font-size: 1.7rem;
+  font-weight: 600;
+  margin-bottom: 0;
+}
+
+.login-container h1 {
+  background: #0a0a0a;
+  color: #d9ae4c;
   padding: 30px 30px 2px 30px;
   text-align: center;
   font-size: 1.7rem;
@@ -38,17 +74,16 @@ body {
 .divider {
   width: 75%;
   margin: 10px auto;
-  color: #D9AE4C;
+  color: #d9ae4c;
 }
 
 /* Form sections */
 .form-section {
   padding: 25px 30px;
-
 }
 
 .form-section h2 {
-  color: #D9AE4C;
+  color: #d9ae4c;
   margin-bottom: 20px;
   font-size: 1.4em;
   font-weight: 500;
@@ -56,7 +91,7 @@ body {
 }
 
 /* Date inputs */
-.date-inputs {
+.date-inputs{
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 20px;
@@ -75,7 +110,8 @@ body {
 }
 
 .input-group input[type="date"],
-.input-group input[type="text"] {
+.input-group input[type="password"],
+.input-group input[type="text"]{
   padding: 12px;
   border: 2px solid #ddd;
   border-radius: 8px;
@@ -85,9 +121,39 @@ body {
 }
 
 .input-group input[type="date"]:focus,
-.input-group input[type="text"]:focus {
+.input-group input[type="text"]:focus,
+.input-group input[type="password"]:focus{
   outline: none;
-  border-color: #D9AE4C;
+  border-color: #d9ae4c;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+/* Time inputs */
+.time-inputs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.timeDisclaimer {
+  color: white;
+  margin-top: -2em;
+  font-size: smaller;
+  margin-bottom: 1em;
+}
+
+.input-group input[type="time"] {
+  padding: 12px;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  font-size: 1em;
+  transition: all 0.3s ease;
+  background: white;
+}
+
+.input-group input[type="time"]:focus {
+  outline: none;
+  border-color: #d9ae4c;
   box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
@@ -107,8 +173,8 @@ body {
   flex: 1;
   margin-bottom: 0;
 }
-/*
-.browse-btn {
+
+.login-btn {
   background: #ffffff;
   color: #555555;
   border: 2px solid #ddd;
@@ -121,7 +187,7 @@ body {
   white-space: nowrap;
 }
 
-.browse-btn:hover {
+.login-btn:hover {
   background: #D9AE4C;
   transform: translateY(-2px);
   box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
@@ -129,7 +195,6 @@ body {
   border-color: #555555;
 }
 
-*/
 
 /* Checkbox group */
 .checkbox-group {
@@ -144,7 +209,7 @@ body {
   align-items: center;
   gap: 12px;
   padding: 12px;
-  border: 2px solid #D9AE4C;
+  border: 2px solid #d9ae4c;
   border-radius: 8px;
   transition: all 0.3s ease;
   background: #f8f9fa;
@@ -161,13 +226,13 @@ body {
   width: 18px;
   height: 18px;
   cursor: pointer;
-  accent-color: #D9AE4C;
+  accent-color: #d9ae4c;
 }
 
 .checkbox-item label {
   cursor: pointer;
   font-size: 0.95em;
-  color: #0A0A0A;
+  color: #0a0a0a;
   flex: 1;
 }
 
@@ -197,7 +262,7 @@ body {
 }
 
 .control-btn:hover {
-  background: #D9AE4C;
+  background: #d9ae4c;
   border-color: #555555;
   transform: translateY(-1px);
   color: #ffffff;
@@ -207,7 +272,7 @@ body {
 .submit-btn {
   background: #ffffff;
   color: #555555;
-  border: solid #D9AE4C;
+  border: solid #d9ae4c;
   padding: 15px 40px;
   border-radius: 8px;
   cursor: pointer;
@@ -219,11 +284,10 @@ body {
   min-width: 200px;
 }
 
-
 .submit-btn:hover {
   transform: translateY(-2px);
   box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
-  background: #D9AE4C;
+  background: #d9ae4c;
   color: #ffffff;
   border-color: #555555;
 }
@@ -231,7 +295,44 @@ body {
 .submit-btn:active {
   transform: translateY(0);
 }
+.submit-btn.hide {
+  pointer-events: none;
+  display: none;
+}
 
+
+/* Modal container */
+.modal-popup {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgb(28, 27, 27);
+  border: 2px solid #D9AE4C;
+  opacity: 0;
+  pointer-events: none;
+  color: white;
+  margin: auto;
+  width: 50%;
+  max-width: 100%;
+  height: 40px;
+  max-height: 100px;
+  position: sticky;
+  bottom: 20px;
+  transition: opacity 0.35s ease-in, transform 0.35s;
+}
+
+.modal-popup:hover {
+  transform: scale(1.1);
+}
+.modal-popup.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.modal {
+  transition: 0.35s ease-in;
+  max-width: 100%;
+}
 /* Responsive design */
 @media (max-width: 768px) {
   .form-container {
@@ -277,25 +378,69 @@ body {
   }
 }
 
-@media (max-width: 480px) {
-  body {
-    padding: 10px;
-  }
+/* loading screen (shown on submit) */
 
-  .form-container h1 {
-    font-size: 1.5em;
-  }
-
-  .form-section {
-    padding: 15px;
-  }
-
-  .checkbox-item {
-    padding: 10px;
-  }
-
-  .submit-btn {
-    width: 100%;
-    min-width: auto;
-  }
+#loader {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.3); /* Slightly darkens background */
+  backdrop-filter: blur(8px);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  pointer-events: auto;
 }
+
+#loading {
+  border: 4px solid #ccc;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  border-top-color: #d9ae4c;
+  border-left-color: #d9ae4c;
+  animation: spin 1s infinite ease-in;
+  pointer-events: none;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
+
+}
+
+/* specific to msg template */
+ .content{
+   padding: 1em;
+   color: white;
+   color: white;
+   display: flex;
+   align-content: center;
+   justify-content: center;
+}
+
+ .inner-content{
+
+   font-size: 2.1em;
+   border: 2px solid white;
+   border-radius: 8px;
+   background-color: #555555;
+   padding: 8px;
+
+ }
+ .content a:visited{
+   color: #d9ae4c;
+ }
+
+ .content a{
+   color: #D9AE4C;
+ }
+
+/* mobile-specific CSS */
