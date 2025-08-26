@@ -424,6 +424,7 @@ body {
    display: flex;
    align-content: center;
    justify-content: center;
+   text-align: center;
 }
 
  .inner-content{
