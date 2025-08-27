@@ -95,7 +95,7 @@ document
             document.getElementById("loader").style.display = "flex";
             submit_btn.classList.add('hide');
 
-            const response = await fetch('http://localhost:5000/upload', {
+            const response = await fetch('/upload', {
                 method: 'POST',
                 body: JSON.stringify(reqBody), // string or object
                 headers: {
